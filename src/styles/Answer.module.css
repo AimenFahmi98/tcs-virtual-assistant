@@ -1,0 +1,70 @@
+.globalStyles {
+  font-family: "Arial", sans-serif;
+  font-size: 15px;
+}
+
+.tableStyles table {
+  background-color: white;
+  border-radius: 0.5rem;
+  margin: 1.6rem 0.8rem;
+}
+
+.tableStyles th {
+  padding: 1.5rem 3rem;
+  border: 1px solid black;
+  background-color: var(--color-primary);
+}
+
+.tableStyles td {
+  padding: 1rem 2rem;
+  border: 1px solid black;
+  font-size: 14px;
+}
+
+.ulStyles ul {
+  list-style: none; /* Remove default bullets */
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.ulStyles li {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between bullet and text */
+  padding: 6px 12px; /* Add some padding for a better look */
+  border-radius: 8px; /* Slightly rounded corners */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.ulStyles li::before {
+  content: "●"; /* Custom bullet */
+  color: var(--color-primary_darker); /* Modern accent color */
+  font-size: 0.8rem;
+}
+
+.ulStyles li:hover {
+  background-color: var(--color-accent); /* Subtle hover background */
+  transform: translateX(5px); /* Slight movement on hover */
+}
+
+.pStyles p {
+  margin-bottom: 1.2rem;
+}
+
+.hStyles h1 {
+  font-size: 18px;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.hStyles h2 {
+  font-size: 17px;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.hStyles h3 {
+  font-size: 16px;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
