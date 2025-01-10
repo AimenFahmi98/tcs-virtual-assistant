@@ -146,7 +146,6 @@ class OpenaiController {
   }
 
   getFilesUsedInLastRequest() {
-    console.log(this.filesUsedInLastRequest);
     return this.filesUsedInLastRequest;
   }
 
@@ -286,7 +285,7 @@ class OpenaiController {
     let refinedQuestion = question;
 
     let toolCallLoop = true; // Flag to continue or exit the loop
-    let maxNbToolCalls = 2; // Limit the number of tool calls
+    let maxNbToolCalls = 1; // Limit the number of tool calls
     let currentNbToolCalls = 0;
 
     while (toolCallLoop && currentNbToolCalls < maxNbToolCalls) {
@@ -307,7 +306,6 @@ class OpenaiController {
         refinedQuestion = args.refinedQuestion;
 
         if (functionName === "getAdditionalContext") {
-          console.log("here");
           const result = await this.getAdditionalContext(refinedQuestion);
           this.filesUsedInLastRequest.push(...result.filesUsed); // Append new files used
 
@@ -321,11 +319,6 @@ class OpenaiController {
         toolCallLoop = false;
       }
     }
-
-    console.log(
-      "\n\nthis.filesUsedInLastRequest at the end is:",
-      this.filesUsedInLastRequest
-    );
 
     this.history.push({
       role: "system",

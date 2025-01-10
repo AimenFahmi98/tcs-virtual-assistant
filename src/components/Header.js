@@ -53,7 +53,7 @@ function MenuLink({ title, icon, href }) {
       className="flex items-center justify-between gap-2 rounded-full border border-primary_darker px-4 py-2 text-md hover:bg-primary_light"
     >
       {icon}
-      <span>{title}</span>
+      <span className="w-24 truncate">{title}</span>
     </Link>
   );
 }

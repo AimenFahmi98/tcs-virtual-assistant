@@ -64,7 +64,6 @@ export async function GET(request) {
   const openaiController = await getOrCreateController(String(conversationId));
   const newConversationTitle = await openaiController.generateTitle();
   const filesUsed = openaiController.getFilesUsedInLastRequest();
-  console.log("Coming from route.js:", filesUsed);
 
   return new Response(JSON.stringify({ newConversationTitle, filesUsed }), {
     headers: { "Content-Type": "application/json" },
