@@ -44,9 +44,9 @@ export default {
           "--color-accent-light": "#ffe4e455",
           "--color-accent-secondary": "#fffbeb",
           "--color-text": "#555",
-          "--color-text-light": "#55555595",
+          "--color-text-light": "rgb(115 121 133)",
         },
-        '[data-theme="theme1"]': {
+        '[data-theme="light"]': {
           "--color-primary": "#f3f4f6", // Default theme colors
           "--color-primary-light": "#f9fafb",
           "--color-primary-dark": "#e5e7eb",
@@ -57,26 +57,33 @@ export default {
           "--color-accent-light": "#ffe4e455",
           "--color-accent-secondary": "#fffbeb",
           "--color-text": "#555",
-          "--color-text-light": "#55555595",
+          "--color-text-light": "rgb(115 121 133)",
         },
-        '[data-theme="theme2"]': {
-          "--color-primary": "#fbbf24", // Theme 2 colors (yellow)
-          "--color-primary-dark": "#e5e7eb",
-          "--color-primary-darker": "#d1d5db",
-          "--color-secondary": "#78350f",
-          "--color-background": "#fffbeb",
-          "--color-accent": "#355",
-          "--color-text": "#fff4df",
-          "--color-text-light": "#fff9df",
+        '[data-theme="dark"]': {
+          "--color-primary": "#292929", // Darker base color
+          "--color-primary-light": "#2f2f2fb5", // Lighter variation
+          "--color-primary-dark": "#323232d9", // Even darker
+          "--color-primary-darker": "#323232d9",
+          "--color-secondary": "#374151", // Secondary shade
+          "--color-background": "#212121", // Dark background
+          "--color-accent": "#44403c",
+          "--color-accent-light": "#ffe4e455",
+          "--color-accent-secondary": "#1e293b", // Subtle accent
+          "--color-text": "#ececec", // Light text
+          "--color-text-light": "rgb(156 163 175)", // Muted light text
         },
-        '[data-theme="theme3"]': {
-          "--color-primary": "#3b82f6", // Theme 3 colors (blue)
-          "--color-primary-dark": "#f3f3f3",
-          "--color-primary-darker": "#e9e9e9",
-          "--color-secondary": "#1e40af",
-          "--color-background": "#eff6ff",
-          "--color-accent": "#355",
-          "--color-text": "#eee",
+        '[data-theme="spring"]': {
+          "--color-primary": "#c3e6cb", // Soft pastel green (mint-like)
+          "--color-primary-light": "#eafbea", // Lighter green with a fresh feel
+          "--color-primary-dark": "#93c48b", // Slightly darker mint green
+          "--color-primary-darker": "#76a374", // Deepened green for contrast
+          "--color-secondary": "#fff4d6", // Gentle pastel yellow-orange
+          "--color-background": "#fffaf0", // Very light cream-yellow background
+          "--color-accent": "#fcdba2", // Muted peachy yellow for accents
+          "--color-accent-light": "#fef2d8", // Softer pale yellow for lighter accents
+          "--color-accent-secondary": "#f5f7ed", // Gentle greenish-white for subtle contrasts
+          "--color-text": "#3a5045", // Darker forest green for text
+          "--color-text-light": "rgb(102 120 111)", // Muted gray-green for lighter text
         },
       });
     }),

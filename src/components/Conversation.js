@@ -11,39 +11,39 @@ function Conversation({ title, isActive, setActive }) {
 
   return (
     <div
-      className={`px-4 py-2 rounded-xl ${
+      className={`rounded-xl px-4 py-2 ${
         isActive ? "bg-primary_dark" : "bg-primary"
-      } hover:text-text_light relative w-full`}
+      } relative w-full text-text hover:text-text_light`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {(isHovered || isMenuExpanded) && (
         <ExtensionMenu
           className={
-            "absolute top-0 right-0 h-full text-black bg-inherit px-3 rounded-lg"
+            "absolute right-0 top-0 h-full rounded-lg bg-inherit px-3 text-black"
           }
           onExpand={() => setIsMenuExpanded(true)}
           onClose={() => setIsMenuExpanded(false)}
         >
-          <button className="w-[90%] py-3 px-4 mx-2 flex items-center justify-start gap-4 hover:bg-primary text-text text-sm rounded-lg">
-            <BiEdit className="w-5 h-5" />
-            <span className=" text-left">Rename</span>
+          <button className="mx-2 flex w-[90%] items-center justify-start gap-4 rounded-lg px-4 py-3 text-sm text-text hover:bg-primary">
+            <BiEdit className="h-5 w-5" />
+            <span className="text-left">Rename</span>
           </button>
-          <div className="w-[80%] m-auto h-px bg-primary_darker my-1"></div>
+          <div className="m-auto my-1 h-px w-[80%] bg-primary_darker"></div>
           <button
-            className="w-[90%] py-3 px-4 mx-2 flex items-center justify-start gap-4 hover:bg-primary text-text text-sm rounded-lg"
+            className="mx-2 flex w-[90%] items-center justify-start gap-4 rounded-lg px-4 py-3 text-sm text-text hover:bg-primary"
             onClick={() =>
               context.deleteConversation(context.activeConversationId)
             }
           >
-            <TbTrash className="w-5 h-5 text-red-400" />
-            <span className=" text-left text-red-400">Delete</span>
+            <TbTrash className="h-5 w-5 text-red-400" />
+            <span className="text-left text-red-400">Delete</span>
           </button>
         </ExtensionMenu>
       )}
       <button
         onClick={() => setActive()}
-        className="truncate text-sm text-left w-full"
+        className="w-full truncate text-left text-sm"
       >
         {title}
       </button>

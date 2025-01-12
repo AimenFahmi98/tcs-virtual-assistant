@@ -11,11 +11,11 @@ function Question({ children, handleDelete, questionId }) {
       className={`flex items-center justify-center ${
         context.intentionToDeleteQuestion.questionId === questionId &&
         "bg-primary_light"
-      } pt-8 pb-2 w-full`}
+      } w-full pb-2 pt-8 text-text`}
     >
-      <div className="flex items-center justify-end w-[46%] gap-4">
-        <div className=" flex items-center justify-end">
-          <div className="w-auto bg-primary_dark px-6 py-3 rounded-3xl ml-20">
+      <div className="flex w-[46%] items-center justify-end gap-4">
+        <div className="flex items-center justify-end">
+          <div className="ml-20 w-auto rounded-3xl bg-primary_dark px-6 py-3">
             {children}
           </div>
         </div>
@@ -29,7 +29,7 @@ function Question({ children, handleDelete, questionId }) {
           }}
           className="text-red-400"
         >
-          <HiOutlineTrash className="w-6 h-6" />
+          <HiOutlineTrash className="h-6 w-6" />
         </button>
       </div>
     </div>

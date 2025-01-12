@@ -1,21 +1,39 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { BiCheck } from "react-icons/bi";
+import { IoCheckmark } from "react-icons/io5";
+import { GiCheckMark } from "react-icons/gi";
+
+import {
+  MdOutlineLightMode,
+  MdNightlightRound,
+  MdOutlineWbTwilight,
+} from "react-icons/md";
 
 function getThemeColors(theme) {
-  const rootStyles = getComputedStyle(document.documentElement);
   document.documentElement.setAttribute("data-theme", theme);
-
+  const rootStyles = getComputedStyle(document.documentElement);
   return {
     primary: rootStyles.getPropertyValue("--color-primary").trim(),
-    secondary: rootStyles.getPropertyValue("--color-secondary").trim(),
+    primaryLight: rootStyles.getPropertyValue("--color-primary-light").trim(),
+    primaryDarker: rootStyles.getPropertyValue("--color-primary-darker").trim(),
+    accent: rootStyles.getPropertyValue("--color-accent").trim(),
     background: rootStyles.getPropertyValue("--color-background").trim(),
+    text: rootStyles.getPropertyValue("--color-text").trim(),
+    textLight: rootStyles.getPropertyValue("--color-text-light").trim(),
   };
 }
 
+const themes = [
+  { name: "light", label: "Light Mode", Icon: MdOutlineLightMode },
+  { name: "spring", label: "Spring Mode", Icon: MdOutlineWbTwilight },
+  { name: "dark", label: "Dark Mode", Icon: MdNightlightRound },
+];
+
 function ThemePicker() {
-  const [theme, setTheme] = useState("theme1");
-  const buttonsRef = useRef([]);
+  const [theme, setTheme] = useState("light");
+  const [themeColors, setThemeColors] = useState({});
 
   const switchTheme = (themeName) => {
     setTheme(themeName);
@@ -23,34 +41,62 @@ function ThemePicker() {
   };
 
   useEffect(() => {
-    const themes = ["theme1", "theme2", "theme3"];
-
-    themes.forEach((themeName, index) => {
-      const colors = getThemeColors(themeName);
-      const button = buttonsRef.current[index];
-      if (button) {
-        button.style.background = colors.primary;
-      }
+    const updatedColors = {};
+    themes.forEach(({ name }) => {
+      updatedColors[name] = getThemeColors(name);
     });
-
-    switchTheme("theme1");
-  }, []);
+    setThemeColors(updatedColors);
+    document.documentElement.setAttribute("data-theme", theme); // Reset to current theme
+  }, [theme]);
 
   return (
-    <div className="mx-8 flex flex-col items-start justify-center gap-8 text-xl">
-      <div className="flex h-full flex-col items-center justify-end">
-        <div className="mb-24 flex gap-8">
-          {["theme1", "theme2", "theme3"].map((themeName, index) => (
-            <button
-              key={themeName}
-              ref={(el) => (buttonsRef.current[index] = el)}
-              className="h-16 w-16 rounded-2xl shadow-lg"
-              onClick={() => switchTheme(themeName)}
-            ></button>
-          ))}
-        </div>
-      </div>
+    <div className="flex gap-8">
+      {themes.map(({ name, label, Icon }) => (
+        <ThemeButton
+          key={name}
+          themeName={name}
+          label={label}
+          Icon={Icon}
+          colors={themeColors[name]}
+          isSelected={name === theme}
+          onClick={() => switchTheme(name)}
+        />
+      ))}
     </div>
+  );
+}
+
+function ThemeButton({ label, Icon, colors, onClick, isSelected }) {
+  // Create an array of color values from the colors object (excluding undefined or null values)
+  const colorCircles = Object.values(colors || {}).filter((color) => color);
+
+  return (
+    <button
+      className={`flex flex-col items-center justify-center gap-3 rounded-2xl p-6 shadow-xl ${isSelected && "border-4 border-primary_dark"} relative`}
+      style={{ background: colors?.primary || "transparent" }}
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-3 self-start">
+        <Icon className="h-6 w-6" style={{ color: colors?.text }} />
+        <span style={{ color: colors?.text }}>{label}</span>
+      </div>
+      <div className="mt-2 flex -space-x-4">
+        {colorCircles.map((color, index) => (
+          <div
+            key={index}
+            className="h-10 w-10 rounded-full border border-gray-400"
+            style={{
+              backgroundColor: color,
+            }}
+          ></div>
+        ))}
+      </div>
+      {isSelected && (
+        <div className="absolute right-0 top-0 -translate-y-[40%] translate-x-[40%] rounded-full bg-primary_dark p-2">
+          <IoCheckmark className="h-6 w-6" />
+        </div>
+      )}
+    </button>
   );
 }
 

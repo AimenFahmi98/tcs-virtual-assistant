@@ -61,7 +61,7 @@ function QuestionBox() {
 
       // Fetch the new title and files used
       const titleAndFilesUsedResponse = await fetch(
-        `http://localhost:3000/api/openai?conversationId=${context.activeConversationId}`
+        `http://localhost:3000/api/openai?conversationId=${context.activeConversationId}`,
       );
 
       if (titleAndFilesUsedResponse.ok) {
@@ -72,7 +72,7 @@ function QuestionBox() {
 
         context.updateConversationTitle(
           context.activeConversationId,
-          newConversationTitle
+          newConversationTitle,
         );
 
         // Optionally, store or process the filesUsed
@@ -112,14 +112,14 @@ function QuestionBox() {
   }
 
   return (
-    <div className="flex items-center justify-center transition-all duration-200 ease-out w-[600px] focus-within:w-[650px] bg-primary rounded-2xl focus-within:shadow-lg_custom">
+    <div className="flex w-[600px] items-center justify-center rounded-2xl bg-primary transition-all duration-200 ease-out focus-within:w-[650px] focus-within:shadow-lg_custom">
       <form
         onSubmit={handleSubmitQuestion}
-        className="flex items-center justify-center w-full gap-2"
+        className="flex w-full items-center justify-center gap-2"
         ref={formRef}
       >
         <textarea
-          className="text-text bg-inherit text-md placeholder:text-text_light placeholder:text-md w-full outline-none px-8 py-4 resize-none"
+          className="text-md placeholder:text-md w-full resize-none bg-inherit px-8 py-4 text-text outline-none placeholder:text-text_light"
           name="question"
           placeholder="Ask me anything..."
           autoComplete="off"
@@ -136,11 +136,11 @@ function QuestionBox() {
           {isLoading ? (
             <Spinner />
           ) : (
-            <BsArrowUpCircleFill className="w-9 h-9" />
+            <BsArrowUpCircleFill className="h-9 w-9" />
           )}
         </button>
         <button className="m-4">
-          <LuAudioLines className="w-7 h-7 hover:text-gray-600" />
+          <LuAudioLines className="h-7 w-7 hover:text-gray-600" />
         </button>
       </form>
     </div>

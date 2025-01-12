@@ -40,19 +40,19 @@ function Answer({ answer, filesUsedAsContext }) {
       } pb-8 pt-2`}
     >
       <div
-        className={"relative flex items-center justify-start w-[45%] m-auto"}
+        className={"relative m-auto flex w-[45%] items-center justify-start"}
       >
         <LogoIcon />
-        <div className="inline-block max-w-[96%] w-auto bg-primary_light p-6 rounded-3xl">
+        <div className="inline-block w-auto max-w-[96%] rounded-3xl bg-primary_light p-6">
           <HtmlBox>{answer?.content}</HtmlBox>
           {isRAGUsed && (
-            <div className="mt-6 py-4 px-6 rounded-xl bg-accent inline-block text-center">
-              <h2 className="text-xl mb-4">Sources</h2>
-              <div className="flex gap-4">
+            <div className="mt-6 inline-block w-full rounded-xl bg-accent px-6 py-4 text-center">
+              <h2 className="mb-4 text-xl">Sources</h2>
+              <div className="flex w-full gap-4 overflow-scroll">
                 {calculateFileStatistics(filesUsedAsContext).map(
                   (fileStats, index) => (
                     <SourceTag fileStats={fileStats} key={index} />
-                  )
+                  ),
                 )}
               </div>
             </div>
@@ -65,7 +65,7 @@ function Answer({ answer, filesUsedAsContext }) {
 
 function LogoIcon() {
   return (
-    <div className="absolute top-0 left-0 -translate-x-[140%] bg-red-50 p-2.5 border border-primary rounded-[50%]">
+    <div className="absolute left-0 top-0 -translate-x-[140%] rounded-[50%] border border-primary bg-red-50 p-2.5">
       <div className="flex items-center justify-center">
         <Image
           src={"/tcs-logo-no-text.webp"}
@@ -80,11 +80,13 @@ function LogoIcon() {
 
 function SourceTag({ fileStats }) {
   return (
-    <div className="flex items-center justify-center text-[11px] rounded-full bg-white px-4 py-2 border border-red-300">
-      <div className="flex items-center justify-center mr-2">
-        <BsFiletypePdf className="text-red-600 w-4 h-4" />
+    <div className="flex items-center justify-center rounded-full border border-red-300 bg-white px-4 py-2 text-[11px]">
+      <div className="mr-2 flex items-center justify-center">
+        <BsFiletypePdf className="h-4 w-4 text-red-600" />
       </div>
-      <div>{fileStats.file}</div>
+      <div className="w-30 text-ellipsis text-nowrap text-black">
+        {fileStats.file}
+      </div>
     </div>
   );
 }

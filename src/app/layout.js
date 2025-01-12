@@ -1,13 +1,10 @@
-import Header from "@/components/Header";
-import Sidebar from "@/components/Sidebar";
 import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
-import { ChatContextProvider } from "@/context/chatContext";
 
 // Import Poppins font
 const poppins = Poppins({
   subsets: ["latin"], // Include Latin subset (or others as needed)
-  weight: ["400", "700"], // Optional: Define specific font weights
+  weight: ["400", "500", "600", "700"], // Optional: Define specific font weights
 });
 
 export const metadata = {
@@ -18,16 +15,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      {/* Apply Poppins font */}
-      <body className={`${poppins.className} relative bg-white`}>
-        {/* <div className="absolute inset-0 bg-[url('/bg-7.jpg')] scale-105 bg-cover blur-lg"></div> */}
-        <div className="relative grid grid-cols-[auto_1fr] grid-rows-[60px_1fr]">
-          <Header />
-          <ChatContextProvider>
-            <Sidebar />
-            <main className="realtive">{children}</main>
-          </ChatContextProvider>
-        </div>
+      <body
+        className={`${poppins.className} bg-background text-text transition-all duration-300`}
+      >
+        {children}
       </body>
     </html>
   );

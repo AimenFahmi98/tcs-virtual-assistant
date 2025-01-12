@@ -10,7 +10,7 @@ function VirtualAssistant() {
 
   return (
     <div className="col-span-1 col-start-2 h-[95%]">
-      <div className="flex flex-col h-full items-center justify-center gap-8">
+      <div className="flex h-full flex-col items-center justify-center gap-8">
         {context.hasQuestions ? <MessagesBox /> : <VAWelcome />}
         <QuestionBox />
       </div>
