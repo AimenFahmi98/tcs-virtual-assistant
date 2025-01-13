@@ -7,7 +7,7 @@ function Layout({ children }) {
     <div className="grid grid-cols-[auto_1fr]">
       <Sidebar>
         <Link
-          className="ml-20 mt-4 flex items-center justify-center gap-4 text-nowrap hover:text-text_light"
+          className="ml-20 mt-4 flex items-center justify-center gap-4 text-nowrap text-text_light hover:text-text"
           href={"/ai-assistant"}
         >
           <BiArrowBack className="h-6 w-6" />

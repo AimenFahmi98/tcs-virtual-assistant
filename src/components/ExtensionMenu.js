@@ -29,7 +29,7 @@ function ExtensionMenu({ className, onExpand, onClose, children }) {
   }, [onClose]);
   return (
     <div className={`${className} flex items-center justify-center`}>
-      <div className="relative flex items-center justify-centers">
+      <div className="justify-centers relative flex items-center">
         <button
           onClick={(e) => {
             e.stopPropagation(); // Prevent click from propagating to the document
@@ -42,7 +42,7 @@ function ExtensionMenu({ className, onExpand, onClose, children }) {
         {isExpanded && (
           <div
             ref={containerRef}
-            className="absolute top-0 right-0 translate-x-[108%] bg-white border border-primary_dark rounded-2xl shadow-lg flex flex-col items-center justify-center overflow-hidden py-2"
+            className="absolute right-0 top-0 flex translate-x-[108%] flex-col items-center justify-center overflow-hidden rounded-2xl border border-primary_dark bg-background py-2 shadow-lg"
           >
             {children}
           </div>

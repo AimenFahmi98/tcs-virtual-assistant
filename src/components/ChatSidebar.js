@@ -16,10 +16,10 @@ function ChatSidebar() {
           className="p-3"
           onClick={() => context.createNewEmptyConversation()}
         >
-          <TbEdit className="h-7 w-7 text-gray-500 hover:text-gray-800" />
+          <TbEdit className="h-7 w-7 text-gray-500 hover:text-text" />
         </button>
         <button className="p-3">
-          <LuSearch className="h-7 w-7 text-gray-500 hover:text-gray-800" />
+          <LuSearch className="h-7 w-7 text-gray-500 hover:text-text" />
         </button>
       </div>
 

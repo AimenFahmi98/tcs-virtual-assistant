@@ -20,7 +20,7 @@ function Conversation({ title, isActive, setActive }) {
       {(isHovered || isMenuExpanded) && (
         <ExtensionMenu
           className={
-            "absolute right-0 top-0 h-full rounded-lg bg-inherit px-3 text-black"
+            "absolute right-0 top-0 h-full rounded-lg bg-inherit px-3 text-text"
           }
           onExpand={() => setIsMenuExpanded(true)}
           onClose={() => setIsMenuExpanded(false)}

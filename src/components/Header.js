@@ -36,7 +36,7 @@ function MenuLink({ title, icon, href }) {
   return (
     <Link
       href={href}
-      className="text-md flex items-center justify-center gap-2 rounded-full border border-primary_darker px-4 py-2 hover:bg-primary_light"
+      className="flex items-center justify-center gap-2 rounded-full border border-primary_darker px-4 py-2 text-sm hover:bg-primary_light"
     >
       {icon}
       <span className="max-w-24 truncate">{title}</span>
