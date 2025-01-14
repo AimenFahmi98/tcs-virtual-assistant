@@ -81,15 +81,13 @@ export async function POST(request) {
       "documents",
     );
     if (!supabaseUploadFileResponse.success) {
+      if (supabaseUploadFileResponse.path) {
+        return NextResponse.json(
+          { success: true, message: "File already exists." },
+          { status: 200 },
+        );
+      }
       throw new Error("Error uploading file to Supabase storage.");
-    }
-
-    // Check if the file has already been uploaded
-    if (supabaseUploadFileResponse.path) {
-      return NextResponse.json(
-        { success: true, message: "File already exists." },
-        { status: 200 },
-      );
     }
 
     const { chunks, metadata } = await processDocument(file, file.name);
@@ -99,7 +97,7 @@ export async function POST(request) {
       name: metadata.fileName,
       size: metadata.fileSize,
       type: metadata.fileType,
-      path: uploadResult.path,
+      path: supabaseUploadFileResponse.path,
       nbChunks: metadata.numChunks,
       isSelectedForRAG: false,
     });

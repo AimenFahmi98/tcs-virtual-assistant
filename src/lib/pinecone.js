@@ -6,7 +6,7 @@ class PineconeController {
     this.pc = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY,
     });
-    this.INDEX_NAME = "tcs-virtual-assistant";
+    this.INDEX_NAME = "tcs-ai-assistant";
   }
 
   getIndex() {

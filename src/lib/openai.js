@@ -248,7 +248,7 @@ class OpenaiController {
       model: "text-embedding-3-small",
       input: refinedQuestion,
       encoding_format: "float",
-      dimensions: 1536,
+      dimensions: 256,
     });
     console.log(RAGDocuments);
 
@@ -350,6 +350,7 @@ class OpenaiController {
       // Generate embeddings for each chunk
       const { data } = await this.openai.embeddings.create({
         model: "text-embedding-3-small",
+        dimensions: 256,
         input: chunks,
       });
 

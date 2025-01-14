@@ -258,28 +258,30 @@ export async function deleteConversationById(conversationId) {
  */
 export async function uploadFileToSupabase(file, bucketName = "documents") {
   try {
-    // Check if the file already exists by trying to get its public URL
-    const { data: existingFile, error: checkError } = await supabase.storage
-      .from(bucketName)
-      .getPublicUrl(`uploads/${file.name}`);
+    const filePath = `uploads/${file.name}`;
 
-    if (checkError && checkError.status !== 404) {
+    // Check if the file already exists
+    const { data: existingFile, error: listError } = await supabase.storage
+      .from(bucketName)
+      .list("uploads", { search: file.name });
+
+    if (listError) {
       console.error(
         "Error checking file existence in Supabase:",
-        checkError.message,
+        listError.message,
       );
-      return { success: false, error: checkError.message };
+      return { success: false, error: listError.message };
     }
 
-    if (existingFile.publicUrl) {
+    if (existingFile && existingFile.length > 0) {
       console.log("File already exists in Supabase storage.");
-      return { success: true, path: `uploads/${file.name}` };
+      return { success: false, path: filePath };
     }
 
     // Upload the file if it doesn't exist
     const { data, error } = await supabase.storage
       .from(bucketName)
-      .upload(`uploads/${file.name}`, file);
+      .upload(filePath, file);
 
     if (error) {
       console.error("Error uploading file to Supabase:", error.message);
