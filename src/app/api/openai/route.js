@@ -17,12 +17,16 @@ async function getOrCreateController(conversationId) {
 
 // Endpoint for generating the answer and files used
 export async function POST(request) {
-  const { question, activeConversationId } = await request.json();
+  const { question, activeConversationId, RAGDocumentNames } =
+    await request.json();
 
   const openaiController = await getOrCreateController(
-    String(activeConversationId)
+    String(activeConversationId),
   );
-  const answerStream = await openaiController.answer(question);
+  const answerStream = await openaiController.answer(
+    question,
+    RAGDocumentNames,
+  );
   let fullAnswer = "";
 
   const stream = new ReadableStream({

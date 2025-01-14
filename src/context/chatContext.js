@@ -9,6 +9,7 @@ import {
   getAnswers,
   getConversations,
   getQuestions,
+  getDocuments,
   storeNewConversationTitle,
 } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -22,6 +23,7 @@ export function ChatContextProvider({ children }) {
   const [activeConversationId, setActiveConversationId] = useState(1);
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
+  const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [intentionToDeleteQuestion, setIntentionToDeleteQuestion] = useState({
     questionId: -1,
@@ -37,14 +39,19 @@ export function ChatContextProvider({ children }) {
         setConversations(
           conversationsResult.data.map((conversation) => {
             return { id: conversation.id, title: conversation.title };
-          })
+          }),
         );
       }
 
       const questionsResult = await getQuestions(activeConversationId);
       const answersResult = await getAnswers(activeConversationId);
+      const documentsResult = await getDocuments(activeConversationId);
 
-      if (questionsResult.success && answersResult.success) {
+      if (
+        questionsResult.success &&
+        answersResult.success &&
+        documentsResult.success
+      ) {
         setQuestions(
           questionsResult.data.map((question) => {
             return {
@@ -52,7 +59,7 @@ export function ChatContextProvider({ children }) {
               id: question.id,
               conversationId: question.conversationId,
             };
-          })
+          }),
         );
         setAnswers(
           answersResult.data.map((answer) => {
@@ -62,7 +69,20 @@ export function ChatContextProvider({ children }) {
               questionId: answer.questionId,
               conversationId: answer.conversationId,
             };
-          })
+          }),
+        );
+        setDocuments(
+          documentsResult.data.map((document) => {
+            return {
+              id: document.id,
+              name: document.name,
+              size: document.size,
+              isSelectedForRAG: document.isSelectedForRAG,
+              type: document.type,
+              path: document.path,
+              nbChunks: document.nbChunks,
+            };
+          }),
         );
         setIsLoading(false);
       } else if (questionsResult.error || answersResult.error) {
@@ -95,10 +115,10 @@ export function ChatContextProvider({ children }) {
 
   async function removeQuestionAndAssociatedAnswer(questionId) {
     setQuestions((questions) =>
-      questions.filter((question) => question.id !== questionId)
+      questions.filter((question) => question.id !== questionId),
     );
     setAnswers((answers) =>
-      answers.filter((answer) => answer.questionId !== questionId)
+      answers.filter((answer) => answer.questionId !== questionId),
     );
 
     try {
@@ -127,7 +147,7 @@ export function ChatContextProvider({ children }) {
       content,
       filesUsedAsContext,
       questionId,
-      activeConversationId
+      activeConversationId,
     );
     if (!success || !data || data.length === 0) {
       throw new Error("Failed to add the answer to the database.");
@@ -156,15 +176,15 @@ export function ChatContextProvider({ children }) {
       conversations.map((conversation) =>
         conversation.id === conversationId
           ? { ...conversation, title: newTitle }
-          : conversation
-      )
+          : conversation,
+      ),
     );
 
     try {
       // Update the title in the database
       const { success, error } = await storeNewConversationTitle(
         conversationId,
-        newTitle
+        newTitle,
       );
       if (!success) {
         throw new Error(`Failed to update the conversation title: ${error}`);
@@ -177,13 +197,15 @@ export function ChatContextProvider({ children }) {
   async function deleteConversation(conversationId) {
     // Update the local state to remove the conversation
     setConversations((conversations) =>
-      conversations.filter((conversation) => conversation.id !== conversationId)
+      conversations.filter(
+        (conversation) => conversation.id !== conversationId,
+      ),
     );
 
     // Reset active conversation if the deleted conversation was active
     if (activeConversationId === conversationId) {
       setActiveConversationId(
-        conversations.length > 0 ? conversations[0].id : -1
+        conversations.length > 0 ? conversations[0].id : -1,
       );
     }
 
@@ -213,6 +235,7 @@ export function ChatContextProvider({ children }) {
     updateAnswer,
     storeAnswer,
     removeQuestionAndAssociatedAnswer,
+    documents,
     intentionToDeleteQuestion,
     setIntentionToDeleteQuestion,
     hasQuestions,

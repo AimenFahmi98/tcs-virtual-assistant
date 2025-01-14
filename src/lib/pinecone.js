@@ -1,4 +1,6 @@
+import { metadata } from "@/app/layout";
 import { Pinecone } from "@pinecone-database/pinecone";
+import { getChunkByDocumentId } from "./supabase";
 class PineconeController {
   constructor() {
     this.pc = new Pinecone({
@@ -46,7 +48,7 @@ class PineconeController {
       // Prepare data for upserting
       const upserts = embeddings.map((embedding, index) => ({
         id: `${namespace}_chunk_${index}`,
-        values: embedding,
+        values: embedding.vector,
       }));
 
       // Upsert data into Pinecone
@@ -60,7 +62,7 @@ class PineconeController {
     }
   }
 
-  async queryForEmbedding(indexName, namespaces, embedding, topK = 5) {
+  async queryForEmbedding(namespaces, embedding, topK = 5) {
     const index = this.getIndex();
     let results = [];
     for (const namespace of namespaces) {
@@ -73,8 +75,8 @@ class PineconeController {
       // Add each match to the results array with relevant info
       results = results.concat(
         response.matches.map((match) => ({
-          namespace: namespace,
-          text: match.metadata.text,
+          namespace,
+          id: match.id,
           score: match.score,
         })),
       );
@@ -83,10 +85,14 @@ class PineconeController {
     // Sort the combined results by score in descending order
     results.sort((a, b) => b.score - a.score);
 
-    // Extract the top K text chunks with the highest scores
-    return results.slice(0, topK).map((result) => {
-      return { fromFile: result.namespace, textChunk: result.text };
-    });
+    const chunks = await Promise.all(
+      results.slice(0, topK).map(async (result) => {
+        const { success, chunk } = await getChunkByDocumentId(result.id);
+        return { fromFile: result.namespace, textChunk: chunk };
+      }),
+    );
+
+    return chunks;
   }
 }
 

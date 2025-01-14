@@ -3,7 +3,11 @@ import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import mammoth from "mammoth";
 import { encode } from "gpt-tokenizer";
 import pdfParse from "pdf-parse";
-import { uploadFileToSupabase, addDocumentToSupabase } from "@/lib/supabase";
+import {
+  uploadFileToSupabase,
+  addDocumentToSupabase,
+  storeChunksInSupabase,
+} from "@/lib/supabase";
 import PineconeController from "@/lib/pinecone";
 import OpenaiController from "@/lib/openai";
 
@@ -71,13 +75,24 @@ export async function POST(request) {
       );
     }
 
-    const { chunks, metadata } = await processDocument(file, file.name);
-
     // Upload file to Supabase storage
-    const uploadResult = await uploadFileToSupabase(file, "documents");
-    if (!uploadResult.success) {
-      throw new Error(`File upload failed: ${uploadResult.error}`);
+    const supabaseUploadFileResponse = await uploadFileToSupabase(
+      file,
+      "documents",
+    );
+    if (!supabaseUploadFileResponse.success) {
+      throw new Error("Error uploading file to Supabase storage.");
     }
+
+    // Check if the file has already been uploaded
+    if (supabaseUploadFileResponse.path) {
+      return NextResponse.json(
+        { success: true, message: "File already exists." },
+        { status: 200 },
+      );
+    }
+
+    const { chunks, metadata } = await processDocument(file, file.name);
 
     // Store document metadata in Supabase
     const supabaseResult = await addDocumentToSupabase({
@@ -95,14 +110,38 @@ export async function POST(request) {
       );
     }
 
+    const documentId = supabaseResult.data.id;
+    console.log(documentId);
+
     // Generate and store embeddings in Pinecone
-    const embeddings = await openai.generateOpenAIEmbeddings(chunks);
+    const embeddings = await openai.generateOpenAIEmbeddings(
+      chunks,
+      metadata.fileName,
+    );
+
     await pinecone.storeEmbeddings(embeddings, metadata.fileName);
 
-    return NextResponse.json({
-      success: true,
-      message: "Document processed and uploaded successfully.",
-    });
+    const chunksToStore = embeddings.map((embedding) => ({
+      id: embedding.id,
+      documentId,
+      content: embedding.chunk,
+    }));
+    const supabaseStoreChunksResponse =
+      await storeChunksInSupabase(chunksToStore);
+
+    if (!supabaseStoreChunksResponse.success) {
+      throw new Error(
+        `Error storing chunks in Supabase: ${supabaseStoreChunksResponse.error}`,
+      );
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Document processed and uploaded successfully.",
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Error processing document:", error);
     return NextResponse.json(

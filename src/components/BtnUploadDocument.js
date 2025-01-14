@@ -33,7 +33,7 @@ function BtnUploadDocument() {
 
       if (result.success) {
         // Display success toast
-        toast.success("Document processed and uploaded successfully!", {
+        toast.success(result.message, {
           position: "top-right",
         });
       } else {

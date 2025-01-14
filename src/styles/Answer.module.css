@@ -6,7 +6,7 @@
 }
 
 .tableStyles table {
-  background-color: white;
+  background-color: var(--color-background);
   border-radius: 0.5rem;
   margin: 1.6rem 0.8rem;
 }

@@ -258,7 +258,25 @@ export async function deleteConversationById(conversationId) {
  */
 export async function uploadFileToSupabase(file, bucketName = "documents") {
   try {
-    console.log(file.name);
+    // Check if the file already exists by trying to get its public URL
+    const { data: existingFile, error: checkError } = await supabase.storage
+      .from(bucketName)
+      .getPublicUrl(`uploads/${file.name}`);
+
+    if (checkError && checkError.status !== 404) {
+      console.error(
+        "Error checking file existence in Supabase:",
+        checkError.message,
+      );
+      return { success: false, error: checkError.message };
+    }
+
+    if (existingFile.publicUrl) {
+      console.log("File already exists in Supabase storage.");
+      return { success: true, path: `uploads/${file.name}` };
+    }
+
+    // Upload the file if it doesn't exist
     const { data, error } = await supabase.storage
       .from(bucketName)
       .upload(`uploads/${file.name}`, file);
@@ -279,7 +297,8 @@ export async function addDocumentToSupabase(document) {
   const { data, error } = await supabase
     .from("documents")
     .insert(document)
-    .select();
+    .select()
+    .single();
   if (error) {
     console.error("Error storing document metadata:", error.message);
     return { success: false, error: error.message };
@@ -293,11 +312,12 @@ export async function addDocumentToSupabase(document) {
  * @param {object} metadata - Metadata for the document.
  * @returns {object} - Object containing success status and inserted data.
  */
-export async function storeChunksInSupabase(chunks, metadata) {
+export async function storeChunksInSupabase(chunks) {
   try {
     const chunkData = chunks.map((chunk) => ({
-      ...metadata,
-      text: chunk,
+      content: chunk.content,
+      pineconeId: chunk.id,
+      documentId: chunk.documentId,
     }));
 
     const { data, error } = await supabase
@@ -317,25 +337,43 @@ export async function storeChunksInSupabase(chunks, metadata) {
 }
 
 /**
- * Get chunks by document ID.
- * @param {string} documentId - The ID of the document to fetch chunks for.
- * @returns {object} - Object containing success status and chunks.
+ * Get a single chunk by document ID from Supabase.
+ * @param {string} documentId - The ID of the document.
+ * @returns {Promise<object>} - Object containing success status and the chunk data or error message.
  */
-export async function getChunksByDocumentId(documentId) {
+export async function getChunkByDocumentId(pineconeId) {
   try {
     const { data, error } = await supabase
       .from("document_chunks")
       .select("*")
-      .eq("documentId", documentId);
+      .eq("pineconeId", pineconeId)
+      .limit(1)
+      .single();
 
     if (error) {
-      console.error("Error fetching chunks by document ID:", error.message);
+      console.error("Error fetching chunk from Supabase:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, chunk: data.content };
+  } catch (err) {
+    console.error("Unexpected error during fetching chunk:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function getDocuments() {
+  try {
+    const { data, error } = await supabase.from("documents").select("*");
+
+    if (error) {
+      console.error("Error fetching documents:", error.message);
       return { success: false, error: error.message };
     }
 
     return { success: true, data };
   } catch (err) {
-    console.error("Unexpected error fetching chunks:", err);
+    console.error("Unexpected error fetching documents:", err);
     return { success: false, error: err.message };
   }
 }

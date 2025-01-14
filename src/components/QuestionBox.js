@@ -29,12 +29,16 @@ function QuestionBox() {
       const questionId = await context.storeQuestion(question);
 
       // Fetch the answer stream and files used
+      const documentNames = context.documents.map((doc) => doc.name);
+      console.log("Documents sent by the questionBox:", documentNames);
+
       const response = await fetch("http://localhost:3000/api/openai/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question,
           activeConversationId: context.activeConversationId,
+          RAGDocumentNames: documentNames,
         }),
       });
 

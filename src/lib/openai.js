@@ -241,25 +241,21 @@ class OpenaiController {
     }
   }
 
-  async getAdditionalContext(refinedQuestion) {
+  async getAdditionalContext(refinedQuestion, RAGDocuments) {
     console.log("Refined question:", refinedQuestion);
 
     const openai_result = await this.openai.embeddings.create({
       model: "text-embedding-3-small",
       input: refinedQuestion,
       encoding_format: "float",
-      dimensions: 384,
+      dimensions: 1536,
     });
+    console.log(RAGDocuments);
 
     const embedding = openai_result.data[0].embedding;
 
     const results = await this.pinecone.queryForEmbedding(
-      "pcb-index",
-      [
-        "offer-letter.pdf",
-        "Feature_Branch_Analysis.pdf",
-        "Bachelors-Thesis-Submitted.pdf",
-      ],
+      RAGDocuments,
       embedding,
       10,
     );
@@ -274,7 +270,8 @@ class OpenaiController {
     return { filesUsed, context };
   }
 
-  async answer(question) {
+  async answer(question, RAGDocuments) {
+    console.log("Documents received in the answer() function:", RAGDocuments);
     // Add the user's question to the history
     this.history.push({
       role: "user",
@@ -306,7 +303,10 @@ class OpenaiController {
         refinedQuestion = args.refinedQuestion;
 
         if (functionName === "getAdditionalContext") {
-          const result = await this.getAdditionalContext(refinedQuestion);
+          const result = await this.getAdditionalContext(
+            refinedQuestion,
+            RAGDocuments,
+          );
           this.filesUsedInLastRequest.push(...result.filesUsed); // Append new files used
 
           this.history.push({
@@ -334,12 +334,13 @@ class OpenaiController {
 
     return answerStream;
   }
+
   /**
    * Generate embeddings for an array of text chunks using OpenAI.
    * @param {Array<string>} chunks - Array of text chunks to generate embeddings for.
-   * @returns {Promise<Array>} - Array of embedding vectors.
+   * @returns {Promise<Array>} - Array of objects containing text chunks and their embeddings.
    */
-  async generateOpenAIEmbeddings(chunks) {
+  async generateOpenAIEmbeddings(chunks, fileName) {
     try {
       // Ensure chunks array is not empty
       if (!chunks || chunks.length === 0) {
@@ -352,7 +353,12 @@ class OpenaiController {
         input: chunks,
       });
 
-      return data.map((item) => item.embedding);
+      // Return an array of objects containing the chunk and its embedding
+      return data.map((item, index) => ({
+        id: `${fileName}_chunk_${index}`,
+        chunk: chunks[index],
+        vector: item.embedding,
+      }));
     } catch (error) {
       console.error("Error generating OpenAI embeddings:", error);
       throw error;
