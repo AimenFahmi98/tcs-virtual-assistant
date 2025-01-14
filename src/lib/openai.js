@@ -61,13 +61,13 @@ class OpenaiController {
     console.log("Filtered History:");
     this.history
       .filter(
-        (message) => message.role === "user" || message.role === "assistant"
+        (message) => message.role === "user" || message.role === "assistant",
       )
       .forEach((message, index) => {
         console.log(
           `${index + 1}. ${message.role === "user" ? "User" : "Assistant"}: ${
             message.content
-          }`
+          }`,
         );
       });
   }
@@ -125,12 +125,12 @@ class OpenaiController {
 
     // Retain only the first system message and other messages
     const firstSystemMessage = this.history.find(
-      (msg) => msg.role === "system"
+      (msg) => msg.role === "system",
     );
     this.history = [
       firstSystemMessage,
       ...this.history.filter(
-        (msg) => msg.role !== "system" || msg === firstSystemMessage
+        (msg) => msg.role !== "system" || msg === firstSystemMessage,
       ),
     ].filter((msg, index, self) => {
       // Ensure that the first system message is only included once
@@ -139,7 +139,7 @@ class OpenaiController {
         index ===
           self.findIndex(
             (innerMsg) =>
-              innerMsg.role === "system" && innerMsg === firstSystemMessage
+              innerMsg.role === "system" && innerMsg === firstSystemMessage,
           )
       );
     });
@@ -152,7 +152,7 @@ class OpenaiController {
   async generateTitle() {
     // Filter the conversation history to include only user and assistant messages
     const filteredHistory = this.history.filter(
-      (message) => message.role === "user" || message.role === "assistant"
+      (message) => message.role === "user" || message.role === "assistant",
     );
 
     // Combine the filtered messages into a single summary input for the model
@@ -161,7 +161,7 @@ class OpenaiController {
         (message) =>
           `${message.role === "user" ? "User" : "Assistant"}: ${
             message.content
-          }`
+          }`,
       )
       .join("\n");
 
@@ -213,18 +213,18 @@ class OpenaiController {
     let historyLength = this.getHistoryLength();
     while (historyLength > this.MAX_HISTORY_LENGTH) {
       console.log(
-        `History contains ${historyLength} tokens. Deleting excessive message from history...`
+        `History contains ${historyLength} tokens. Deleting excessive message from history...`,
       );
 
       // Prioritize deleting the RAG context, then the chatbot responses, then the user questions
       const rag_context_msg_idx = this.history.findIndex(
         (message) =>
           message.role === "user" &&
-          message.content.startsWith("Context for the question")
+          message.content.startsWith("Context for the question"),
       );
 
       const chatbot_answer_idx = this.history.findIndex(
-        (message) => message.role === "assistant"
+        (message) => message.role === "assistant",
       );
 
       if (rag_context_msg_idx !== -1) {
@@ -261,13 +261,13 @@ class OpenaiController {
         "Bachelors-Thesis-Submitted.pdf",
       ],
       embedding,
-      10
+      10,
     );
 
     const context = results.map(
       (result) =>
         `The name of the file used for this chunk is: ${result.fromFile}\n\n` +
-        result.textChunk
+        result.textChunk,
     );
     const filesUsed = results.map((result) => result.fromFile);
 
@@ -333,6 +333,30 @@ class OpenaiController {
     });
 
     return answerStream;
+  }
+  /**
+   * Generate embeddings for an array of text chunks using OpenAI.
+   * @param {Array<string>} chunks - Array of text chunks to generate embeddings for.
+   * @returns {Promise<Array>} - Array of embedding vectors.
+   */
+  async generateOpenAIEmbeddings(chunks) {
+    try {
+      // Ensure chunks array is not empty
+      if (!chunks || chunks.length === 0) {
+        throw new Error("No chunks provided for embedding generation.");
+      }
+
+      // Generate embeddings for each chunk
+      const { data } = await this.openai.embeddings.create({
+        model: "text-embedding-3-small",
+        input: chunks,
+      });
+
+      return data.map((item) => item.embedding);
+    } catch (error) {
+      console.error("Error generating OpenAI embeddings:", error);
+      throw error;
+    }
   }
 }
 

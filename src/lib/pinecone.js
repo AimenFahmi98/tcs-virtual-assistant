@@ -1,49 +1,14 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-
 class PineconeController {
   constructor() {
     this.pc = new Pinecone({
       apiKey: process.env.PINECONE_API_KEY,
     });
+    this.INDEX_NAME = "tcs-virtual-assistant";
   }
 
-  getIndex(indexName) {
-    return this.pc.Index(indexName);
-  }
-
-  async createIndex(indexName) {
-    if (!indexName) {
-      console.log("Index name has not been defined. Returning null.");
-      return null;
-    }
-    // Check if the index already exists
-    const existingIndexes = (await this.pc.listIndexes()).indexes;
-    const indexAlreadyExists =
-      existingIndexes.find((index) => index.name == indexName) !== undefined;
-    if (!indexAlreadyExists) {
-      console.log(`Index "${indexName}" does not exist. Creating it now...`);
-
-      // Create the index
-      await this.pc.createIndex({
-        name: indexName,
-        dimension: 384,
-        metric: "cosine",
-        spec: {
-          serverless: {
-            cloud: "aws",
-            region: "us-east-1",
-          },
-        },
-      });
-
-      console.log(`Index "${indexName}" created successfully.`);
-    } else {
-      console.log(`Index "${indexName}" already exists.`);
-    }
-
-    // Return the index object for further use
-    const index = this.pc.Index(indexName);
-    return index;
+  getIndex() {
+    return this.pc.Index(this.INDEX_NAME);
   }
 
   async namespaceAlreadyExists(index, namespace) {
@@ -58,19 +23,45 @@ class PineconeController {
     return false;
   }
 
-  async storeEmbeddings(indexName, namespace, embeddings) {
+  /**
+   * Store embeddings in Pinecone under a specific namespace.
+   * @param {Array<Object>} embeddingsWithMetadata - Array of objects containing the embedding, ID, and metadata.
+   * Format: [{ id: "unique-id", values: [embedding-vector], metadata: { key: value } }]
+   * @param {string} namespace - Namespace for storing embeddings (e.g., file-specific namespace).
+   * @returns {Promise<void>}
+   */
+  async storeEmbeddings(embeddings, namespace) {
     try {
-      const index = this.getIndex(indexName);
-      await index.namespace(namespace).upsert(embeddings);
-      console.log(`Embeddings successfully upserted into Pinecone.`);
+      const pcIndex = this.getIndex();
+
+      // Check if the namespace already exists; create it if it doesn't
+      const namespaceExists = await this.namespaceAlreadyExists(
+        pcIndex,
+        namespace,
+      );
+      if (namespaceExists) {
+        return;
+      }
+
+      // Prepare data for upserting
+      const upserts = embeddings.map((embedding, index) => ({
+        id: `${namespace}_chunk_${index}`,
+        values: embedding,
+      }));
+
+      // Upsert data into Pinecone
+      await pcIndex.namespace(namespace).upsert(upserts);
+      console.log(
+        `Embeddings successfully stored under namespace: ${namespace}`,
+      );
     } catch (error) {
-      console.log(`Error storing embeddings: ${error.message}`);
-      console.log(error.stack); // Log the full stack trace
+      console.error("Error storing embeddings in Pinecone:", error);
+      throw error;
     }
   }
 
   async queryForEmbedding(indexName, namespaces, embedding, topK = 5) {
-    const index = this.getIndex(indexName);
+    const index = this.getIndex();
     let results = [];
     for (const namespace of namespaces) {
       const response = await index.namespace(namespace).query({
@@ -85,7 +76,7 @@ class PineconeController {
           namespace: namespace,
           text: match.metadata.text,
           score: match.score,
-        }))
+        })),
       );
     }
 

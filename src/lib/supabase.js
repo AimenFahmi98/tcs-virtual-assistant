@@ -3,7 +3,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = "https://ssiznirqzcgkeuzesfad.supabase.co";
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = process.env.SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function getQuestions(conversationId) {
@@ -90,7 +90,7 @@ export async function addAnswer(
   content,
   filesUsedAsContext,
   questionId,
-  conversationId
+  conversationId,
 ) {
   try {
     // Insert the question into the "answers" table
@@ -244,6 +244,98 @@ export async function deleteConversationById(conversationId) {
   } catch (err) {
     // Handle unexpected errors
     console.error("Unexpected error while deleting conversation:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/* Managing Documents */
+
+/**
+ * Upload a file to Supabase storage.
+ * @param {File} file - The file object to upload.
+ * @param {string} bucketName - The Supabase storage bucket name.
+ * @returns {object} - Object containing success status and file path.
+ */
+export async function uploadFileToSupabase(file, bucketName = "documents") {
+  try {
+    console.log(file.name);
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .upload(`uploads/${file.name}`, file);
+
+    if (error) {
+      console.error("Error uploading file to Supabase:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, path: data.path };
+  } catch (err) {
+    console.error("Unexpected error during file upload:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function addDocumentToSupabase(document) {
+  const { data, error } = await supabase
+    .from("documents")
+    .insert(document)
+    .select();
+  if (error) {
+    console.error("Error storing document metadata:", error.message);
+    return { success: false, error: error.message };
+  }
+  return { success: true, data };
+}
+
+/**
+ * Store chunks and metadata in Supabase.
+ * @param {Array} chunks - Array of text chunks to store.
+ * @param {object} metadata - Metadata for the document.
+ * @returns {object} - Object containing success status and inserted data.
+ */
+export async function storeChunksInSupabase(chunks, metadata) {
+  try {
+    const chunkData = chunks.map((chunk) => ({
+      ...metadata,
+      text: chunk,
+    }));
+
+    const { data, error } = await supabase
+      .from("document_chunks")
+      .insert(chunkData);
+
+    if (error) {
+      console.error("Error storing chunks in Supabase:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Unexpected error during chunk storage:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Get chunks by document ID.
+ * @param {string} documentId - The ID of the document to fetch chunks for.
+ * @returns {object} - Object containing success status and chunks.
+ */
+export async function getChunksByDocumentId(documentId) {
+  try {
+    const { data, error } = await supabase
+      .from("document_chunks")
+      .select("*")
+      .eq("documentId", documentId);
+
+    if (error) {
+      console.error("Error fetching chunks by document ID:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Unexpected error fetching chunks:", err);
     return { success: false, error: err.message };
   }
 }
