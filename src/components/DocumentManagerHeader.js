@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import BtnUploadDocument from "./BtnUploadDocument";
+import Link from "next/link";
 
 function DocumentManagerHeader() {
   const [activeTab, setActiveTab] = useState("All");
 
   return (
-    <div className="flex items-center justify-between py-4 pl-12 pr-6">
-      <div className="flex w-[80%] justify-start border-b border-gray-300 text-text_light">
-        <button
+    <div className="flex items-center justify-between py-3 pl-8 pr-2">
+      <div className="flex w-[80%] justify-start text-text_light">
+        <Link
+          href="/document-manager/all-documents"
           onClick={() => setActiveTab("All")}
           className={`px-4 py-4 hover:text-text ${
             activeTab === "All"
@@ -20,8 +22,9 @@ function DocumentManagerHeader() {
           <span className={`${activeTab === "All" && "text-accent_secondary"}`}>
             All
           </span>
-        </button>
-        <button
+        </Link>
+        <Link
+          href="/document-manager/rag-documents"
           onClick={() => setActiveTab("Selected for RAG")}
           className={`px-4 py-4 hover:text-text ${
             activeTab === "Selected for RAG"
@@ -34,7 +37,7 @@ function DocumentManagerHeader() {
           >
             Selected for RAG
           </span>
-        </button>
+        </Link>
       </div>
       <BtnUploadDocument />
     </div>

@@ -1,3 +1,4 @@
+import DocumentManagerHeader from "@/components/DocumentManagerHeader";
 import Sidebar from "@/components/Sidebar";
 import Link from "next/link";
 import { BiArrowBack } from "react-icons/bi";
@@ -14,7 +15,15 @@ function Layout({ children }) {
           <span>Virtual Assistant</span>
         </Link>
       </Sidebar>
-      <main>{children}</main>
+      <main>
+        <div className="col-span-1 col-start-2 flex h-full w-full flex-col pl-32 pt-12">
+          <h1 className="mb-10 flex items-center text-2xl">Document Manager</h1>
+          <div className="flex h-full w-full flex-col rounded-tl-[40px] border border-b-transparent border-r-transparent">
+            <DocumentManagerHeader />
+            {children}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
