@@ -39,7 +39,7 @@ function Answer({ answer, filesUsedAsContext }) {
       className={`${
         context.intentionToDeleteQuestion.questionId === answer?.questionId &&
         "bg-primary_light"
-      } pb-8 pt-2`}
+      } rounded-b-3xl px-12 pb-8 pt-2`}
     >
       <div
         className={"relative m-auto flex w-[50%] items-center justify-center"}
@@ -48,8 +48,8 @@ function Answer({ answer, filesUsedAsContext }) {
           <LogoIcon />
           <HtmlBox>{answer?.content}</HtmlBox>
           {isRAGUsed && (
-            <div className="mt-6 inline-block max-w-full overflow-hidden rounded-xl bg-inherit px-6 text-left">
-              <h2 className="mb-4 text-xl">Sources</h2>
+            <div className="mt-2 inline-block max-w-full overflow-hidden rounded-xl text-left">
+              <h2 className="mb-4 text-xl font-[500]">Sources</h2>
               <div className="flex w-full gap-4 overflow-scroll">
                 {calculateFileStatistics(filesUsedAsContext).map(
                   (fileStats, index) => (
