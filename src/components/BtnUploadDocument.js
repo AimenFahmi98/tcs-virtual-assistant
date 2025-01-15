@@ -55,7 +55,7 @@ function BtnUploadDocument() {
 
   return (
     <div className="relative flex items-center justify-center gap-4">
-      <label className="bg-background_accent_secondary flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-accent_secondary transition-all duration-300">
+      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-full border border-transparent bg-background_accent_secondary px-6 py-3 text-accent_secondary transition-all duration-300 hover:scale-95">
         {isUploading ? (
           <Spinner
             color={"var(--color-accent-secondary)"}
