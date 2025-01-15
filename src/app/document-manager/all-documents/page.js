@@ -1,5 +1,4 @@
 import { getDocuments } from "@/lib/supabase";
-import { BsFiletypeTxt } from "react-icons/bs";
 import { FaFilePdf } from "react-icons/fa";
 import { FaFileWord } from "react-icons/fa";
 import { BsFillFileEarmarkTextFill } from "react-icons/bs";

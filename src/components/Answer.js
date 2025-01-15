@@ -1,4 +1,6 @@
-import { BsFiletypePdf } from "react-icons/bs";
+import { FaFilePdf } from "react-icons/fa";
+import { FaFileWord } from "react-icons/fa";
+import { BsFillFileEarmarkTextFill } from "react-icons/bs";
 import HtmlBox from "./HtmlBox";
 import Image from "next/image";
 import { useChatContext } from "@/context/chatContext";
@@ -46,7 +48,7 @@ function Answer({ answer, filesUsedAsContext }) {
           <LogoIcon />
           <HtmlBox>{answer?.content}</HtmlBox>
           {isRAGUsed && (
-            <div className="mt-6 inline-block max-w-full overflow-hidden rounded-xl bg-accent px-6 py-4 text-center">
+            <div className="mt-6 inline-block max-w-full overflow-hidden rounded-xl bg-inherit px-6 text-left">
               <h2 className="mb-4 text-xl">Sources</h2>
               <div className="flex w-full gap-4 overflow-scroll">
                 {calculateFileStatistics(filesUsedAsContext).map(
@@ -79,12 +81,52 @@ function LogoIcon() {
 }
 
 function SourceTag({ fileStats }) {
+  const fileExtension = fileStats.file.split(".").pop().toLowerCase();
+  let borderColor, textColor, IconComponent, bgColor, iconColor;
+
+  switch (fileExtension) {
+    case "pdf":
+      borderColor = "border-red-300";
+      textColor = "text-red-900";
+      iconColor = "text-red-600";
+      bgColor = "#fefefe";
+      IconComponent = <FaFilePdf className={`h-4 w-4 ${iconColor}`} />;
+      break;
+    case "docx":
+      borderColor = "border-blue-300";
+      textColor = "text-blue-900";
+      iconColor = "text-blue-600";
+      bgColor = "#eff6ff";
+      IconComponent = <FaFileWord className={`h-4 w-4 ${iconColor}`} />;
+      break;
+    case "txt":
+      borderColor = "border-green-300";
+      textColor = "text-green-900";
+      iconColor = "text-green-600";
+      bgColor = "#dcfce7";
+      IconComponent = (
+        <BsFillFileEarmarkTextFill className={`h-4 w-4 ${iconColor}`} />
+      );
+      break;
+    default:
+      borderColor = "border-gray-300";
+      textColor = "text-gray-900";
+      iconColor = "text-gray-600";
+      bgColor = "#f9fafb";
+      IconComponent = (
+        <BsFillFileEarmarkTextFill className={`h-4 w-4 ${iconColor}`} />
+      ); // Default icon
+  }
+
   return (
-    <div className="flex items-center justify-center rounded-full border border-red-300 bg-white px-4 py-2 text-[11px]">
+    <div
+      style={{ backgroundColor: bgColor }}
+      className={`flex items-center justify-center rounded-full border ${borderColor} px-4 py-2 text-[11px]`}
+    >
       <div className="mr-2 flex items-center justify-center">
-        <BsFiletypePdf className="h-4 w-4 text-red-600" />
+        {IconComponent}
       </div>
-      <div className="w-30 text-ellipsis text-nowrap text-black">
+      <div className={`w-30 text-ellipsis text-nowrap ${textColor}`}>
         {fileStats.file}
       </div>
     </div>
