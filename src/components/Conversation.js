@@ -31,7 +31,7 @@ function Conversation({ title, isActive, setActive }) {
           </button>
           <div className="m-auto my-1 h-px w-[80%] bg-primary_darker"></div>
           <button
-            className="mx-2 flex w-[90%] items-center justify-start gap-4 rounded-lg px-4 py-3 text-sm text-text hover:bg-primary"
+            className="mx-2 flex w-[90%] items-center justify-start gap-4 rounded-lg px-4 py-3 text-sm text-text hover:cursor-pointer hover:bg-primary"
             onClick={() =>
               context.deleteConversation(context.activeConversationId)
             }

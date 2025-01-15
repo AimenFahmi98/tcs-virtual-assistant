@@ -12,7 +12,7 @@ function MessagesBox() {
     <div className="flex h-[730px] w-full flex-col items-center justify-start overflow-scroll text-sm">
       {context.questions.map((question) => {
         return (
-          <div key={question.id} className="w-full">
+          <div key={question.id}>
             <Question
               handleDelete={context.removeQuestionAndAssociatedAnswer}
               questionId={question.id}

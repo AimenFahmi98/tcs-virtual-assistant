@@ -11,7 +11,7 @@ function layout({ children }) {
         <Header />
         <ChatContextProvider>
           <ChatSidebar />
-          <main className="relative">{children}</main>
+          <main>{children}</main>
         </ChatContextProvider>
       </div>
     </div>

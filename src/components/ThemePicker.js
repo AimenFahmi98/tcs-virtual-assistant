@@ -33,6 +33,11 @@ function ThemePicker() {
   const [theme, setTheme] = useState("dark");
   const [themeColors, setThemeColors] = useState({});
 
+  const switchTheme = (themeName) => {
+    setTheme(themeName);
+    document.documentElement.setAttribute("data-theme", themeName);
+  };
+
   useEffect(() => {
     const updatedColors = {};
     themes.forEach(({ name }) => {
