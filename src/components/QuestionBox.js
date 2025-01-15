@@ -61,8 +61,6 @@ function QuestionBox() {
         context.updateAnswer(answer); // Update the answer in the UI
       }
 
-      await context.storeAnswer(answer);
-
       // Fetch the new title and files used
       const titleAndFilesUsedResponse = await fetch(
         `http://localhost:3000/api/openai?conversationId=${context.activeConversationId}`,
@@ -82,6 +80,8 @@ function QuestionBox() {
         // Optionally, store or process the filesUsed
         answer.filesUsedAsContext = filesUsed;
         context.updateAnswer(answer);
+
+        await context.storeAnswer(answer);
       } else {
         console.error("Failed to fetch new conversation title or files used.");
       }

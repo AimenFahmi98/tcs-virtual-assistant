@@ -40,13 +40,13 @@ function Answer({ answer, filesUsedAsContext }) {
       } pb-8 pt-2`}
     >
       <div
-        className={"relative m-auto flex w-[45%] items-center justify-start"}
+        className={"relative m-auto flex w-[50%] items-center justify-center"}
       >
-        <LogoIcon />
-        <div className="inline-block w-auto max-w-[96%] rounded-3xl bg-primary_light p-6">
+        <div className="relative inline-block w-auto max-w-[850px] rounded-3xl bg-primary_light p-6">
+          <LogoIcon />
           <HtmlBox>{answer?.content}</HtmlBox>
           {isRAGUsed && (
-            <div className="mt-6 inline-block w-full rounded-xl bg-accent px-6 py-4 text-center">
+            <div className="mt-6 inline-block max-w-full overflow-hidden rounded-xl bg-accent px-6 py-4 text-center">
               <h2 className="mb-4 text-xl">Sources</h2>
               <div className="flex w-full gap-4 overflow-scroll">
                 {calculateFileStatistics(filesUsedAsContext).map(

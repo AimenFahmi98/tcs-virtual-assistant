@@ -271,7 +271,6 @@ class OpenaiController {
   }
 
   async answer(question, RAGDocuments) {
-    console.log("Documents received in the answer() function:", RAGDocuments);
     // Add the user's question to the history
     this.history.push({
       role: "user",

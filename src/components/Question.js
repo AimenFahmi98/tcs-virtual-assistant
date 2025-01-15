@@ -8,12 +8,12 @@ function Question({ children, handleDelete, questionId }) {
 
   return (
     <div
-      className={`flex items-center justify-center ${
+      className={` ${
         context.intentionToDeleteQuestion.questionId === questionId &&
         "bg-primary_light"
-      } w-full pb-2 pt-8 text-text`}
+      } pb-2 pt-8 text-text`}
     >
-      <div className="flex w-[46%] items-center justify-end gap-4">
+      <div className="relative m-auto flex w-[950px] items-center justify-end gap-4">
         <div className="flex items-center justify-end">
           <div className="ml-20 w-auto rounded-3xl bg-primary_dark px-6 py-3">
             {children}

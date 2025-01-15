@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BiCheck } from "react-icons/bi";
 import { IoCheckmark } from "react-icons/io5";
-import { GiCheckMark } from "react-icons/gi";
 
 import {
   MdOutlineLightMode,
@@ -32,13 +30,8 @@ const themes = [
 ];
 
 function ThemePicker() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
   const [themeColors, setThemeColors] = useState({});
-
-  const switchTheme = (themeName) => {
-    setTheme(themeName);
-    document.documentElement.setAttribute("data-theme", themeName);
-  };
 
   useEffect(() => {
     const updatedColors = {};
