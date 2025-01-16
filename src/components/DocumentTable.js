@@ -36,12 +36,12 @@ function formatSize(sizeInKB) {
 async function DocumentTable() {
   const documents = await getAllDocuments();
   const documentTypeIcons = new Map([
-    ["pdf", <FaFilePdf className="h-6 w-6 text-red-500" key={"pdf"} />],
-    ["docx", <FaFileWord className="h-6 w-6 text-blue-500" key={"docx"} />],
+    ["pdf", <FaFilePdf className="h-5 w-5 text-red-500" key={"pdf"} />],
+    ["docx", <FaFileWord className="h-5 w-5 text-blue-500" key={"docx"} />],
     [
       "txt",
       <BsFillFileEarmarkTextFill
-        className="h-6 w-6 text-yellow-500"
+        className="h-5 w-5 text-yellow-500"
         key={"txt"}
       />,
     ],
@@ -53,9 +53,8 @@ async function DocumentTable() {
         <table className="min-w-full text-center text-sm text-text">
           <thead className="bg-primary text-xs font-semibold uppercase tracking-wider text-text">
             <tr>
-              <th className="px-6 py-6">Type</th>
-              <th className="px-6 py-6">Date of Upload</th>
               <th className="px-6 py-6">File Name</th>
+              <th className="px-6 py-6">Date of Upload</th>
               <th className="px-6 py-6">Size</th>
               <th className="px-6 py-6">Number of Chunks</th>
               <th className="px-6 py-6">Selected for RAG</th>
@@ -64,13 +63,13 @@ async function DocumentTable() {
           <tbody className="divide-y divide-gray-200">
             {documents.map((doc) => (
               <tr key={doc.id} className="hover:bg-primary_light">
-                <td className="flex items-center justify-center px-6 py-4">
+                <td className="flex items-center justify-start px-6 py-4">
                   {documentTypeIcons.get(doc.type)}
+                  <span className="px-6 py-4 text-left">{doc.name}</span>
                 </td>
                 <td className="px-6 py-4">
                   {new Date(doc.created_at).toLocaleString()}
                 </td>
-                <td className="px-6 py-4 text-left">{doc.name}</td>
                 <td className="px-6 py-4">{formatSize(doc.size / 1024)}</td>
 
                 <td className="px-6 py-4">{doc.nbChunks}</td>

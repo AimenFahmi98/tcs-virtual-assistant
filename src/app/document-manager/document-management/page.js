@@ -1,5 +1,5 @@
 function page() {
-  return <div>Selected for RAG</div>;
+  return <div></div>;
 }
 
 export default page;

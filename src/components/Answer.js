@@ -44,7 +44,7 @@ function Answer({ answer, filesUsedAsContext }) {
       <div
         className={"relative m-auto flex w-[50%] items-center justify-center"}
       >
-        <div className="relative inline-block w-auto min-w-[850px] rounded-3xl bg-primary_light p-6">
+        <div className="relative inline-block min-w-[850px] max-w-[850px] rounded-3xl bg-primary_light p-6">
           <LogoIcon />
           <HtmlBox>{answer?.content}</HtmlBox>
           {isRAGUsed && (
