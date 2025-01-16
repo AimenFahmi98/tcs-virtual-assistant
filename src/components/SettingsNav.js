@@ -11,9 +11,9 @@ function SettingsNav({ children }) {
         <BiArrowBack className="h-6 w-6" />
         <span>Virtual Assistant</span>
       </Link>
-      <div className="mt-20 flex flex-col items-start justify-center gap-5">
+      <div className="mt-20 flex flex-col items-start justify-center gap-6">
         <h1 className="pl-2 text-2xl text-text">Settings</h1>
-        <div className="flex w-full flex-col gap-2 px-2">{children}</div>
+        <div className="flex w-full flex-col gap-1 px-2">{children}</div>
       </div>
     </div>
   );

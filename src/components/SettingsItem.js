@@ -11,7 +11,7 @@ function SettingsItem({ children, title, icon }) {
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center justify-start gap-3">
           {icon}
-          <span>{title}</span>
+          <span className="text-nowrap">{title}</span>
         </div>
         <button
           className="rounded-md p-1 hover:bg-primary hover:text-text"

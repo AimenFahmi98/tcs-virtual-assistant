@@ -30,7 +30,6 @@ function QuestionBox() {
 
       // Fetch the answer stream and files used
       const documentNames = context.documents.map((doc) => doc.name);
-      console.log("Documents sent by the questionBox:", documentNames);
 
       const response = await fetch("http://localhost:3000/api/openai/", {
         method: "POST",
@@ -69,8 +68,6 @@ function QuestionBox() {
       if (titleAndFilesUsedResponse.ok) {
         const { newConversationTitle, filesUsed } =
           await titleAndFilesUsedResponse.json();
-        console.log("New conversation title:", newConversationTitle);
-        console.log("Files used:", filesUsed);
 
         context.updateConversationTitle(
           context.activeConversationId,

@@ -2,23 +2,28 @@
 
 import { useChatContext } from "@/context/chatContext";
 import Conversation from "./Conversation";
+import Loading from "@/app/ai-assistant/loading";
 
 function ConversationHistory() {
   const context = useChatContext();
 
   return (
-    <div className="flex flex-col items-start justify-center px-4 gap-4 w-full">
+    <div className="flex max-h-[70%] min-h-[70%] w-full flex-col items-start justify-start gap-4 px-4">
       <span className="text-md font-bold text-text">Conversations</span>
-      <div className="flex flex-col gap-2 w-full">
-        {context.conversations.map((conversation) => (
-          <Conversation
-            title={conversation.title}
-            isActive={conversation.id === context.activeConversationId}
-            setActive={() => context.setActiveConversationId(conversation.id)}
-            key={conversation.id}
-          />
-        ))}
-      </div>
+      {context.isFetchingForConversations ? (
+        <Loading />
+      ) : (
+        <div className="flex w-full flex-col gap-2 overflow-y-scroll">
+          {context.conversations.map((conversation) => (
+            <Conversation
+              title={conversation.title}
+              isActive={conversation.id === context.activeConversationId}
+              setActive={() => context.setActiveConversationId(conversation.id)}
+              key={conversation.id}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

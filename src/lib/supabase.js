@@ -367,12 +367,12 @@ export async function addDocumentToSupabase(document) {
 }
 
 /**
- * Store chunks and metadata in Supabase.
+ * Store chunks and metadata in Supabase using parallel batch inserts.
  * @param {Array} chunks - Array of text chunks to store.
- * @param {object} metadata - Metadata for the document.
- * @returns {object} - Object containing success status and inserted data.
+ * @param {number} batchSize - The maximum number of chunks to insert per batch.
+ * @returns {object} - Object containing success status and details.
  */
-export async function storeChunksInSupabase(chunks) {
+export async function storeChunksInSupabase(chunks, batchSize = 10) {
   try {
     const chunkData = chunks.map((chunk) => ({
       content: chunk.content,
@@ -380,16 +380,41 @@ export async function storeChunksInSupabase(chunks) {
       documentId: chunk.documentId,
     }));
 
-    const { data, error } = await supabase
-      .from("document_chunks")
-      .insert(chunkData);
-
-    if (error) {
-      console.error("Error storing chunks in Supabase:", error.message);
-      return { success: false, error: error.message };
+    // Divide chunks into batches
+    const batches = [];
+    for (let i = 0; i < chunkData.length; i += batchSize) {
+      batches.push(chunkData.slice(i, i + batchSize));
     }
 
-    return { success: true, data };
+    // Execute batch inserts in parallel
+    const insertPromises = batches.map(async (batch, index) => {
+      const { data, error } = await supabase
+        .from("document_chunks")
+        .insert(batch);
+
+      if (error) {
+        console.error(`Error storing batch ${index}:`, error.message);
+        throw new Error(`Batch ${index} failed: ${error.message}`);
+      }
+
+      return data;
+    });
+
+    // Wait for all batches to complete
+    const results = await Promise.allSettled(insertPromises);
+
+    // Check for errors in the results
+    const errors = results.filter((result) => result.status === "rejected");
+    if (errors.length > 0) {
+      console.error("Errors occurred during batch insertions:", errors);
+      return {
+        success: false,
+        message: "Some batches failed.",
+        errors: errors.map((err) => err.reason),
+      };
+    }
+
+    return { success: true, message: "All chunks stored successfully" };
   } catch (err) {
     console.error("Unexpected error during chunk storage:", err);
     return { success: false, error: err.message };

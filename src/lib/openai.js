@@ -250,7 +250,6 @@ class OpenaiController {
       encoding_format: "float",
       dimensions: 256,
     });
-    console.log(RAGDocuments);
 
     const embedding = openai_result.data[0].embedding;
 

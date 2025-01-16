@@ -8,7 +8,7 @@ function Sidebar({ children, className }) {
   return (
     <>
       <div
-        className={`flex h-screen flex-col justify-start bg-primary_light transition-all duration-300 ease-out ${
+        className={`flex h-screen max-h-screen flex-col justify-start overflow-y-hidden overflow-x-visible bg-primary_light transition-all duration-300 ease-out ${
           isOpen ? "w-80" : "w-0"
         } ${className}`}
       >

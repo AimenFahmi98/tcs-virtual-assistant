@@ -9,7 +9,7 @@ function MessagesBox() {
   const context = useChatContext();
 
   return !context.isLoading ? (
-    <div className="flex h-[730px] w-full flex-col items-center justify-start overflow-scroll text-sm">
+    <div className="flex h-[730px] w-full flex-col items-center justify-start overflow-y-scroll text-sm">
       {context.questions.map((question) => {
         return (
           <div key={question.id}>

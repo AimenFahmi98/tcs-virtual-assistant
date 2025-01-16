@@ -25,38 +25,40 @@ export function ChatContextProvider({ children }) {
   const [answers, setAnswers] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetchingForConversations, setIsFetchingForConversations] =
+    useState(true);
+  const [isConversationsFetched, setIsConversationsFetched] = useState(false);
+  const [isFetchingForQuestions, setIsFetchingForQuestions] = useState(true);
   const [intentionToDeleteQuestion, setIntentionToDeleteQuestion] = useState({
     questionId: -1,
   });
   const [hasQuestions, setHasQuestions] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
+    async function fetchConversations() {
+      setIsFetchingForConversations(true);
       const conversationsResult = await getConversations();
-
-      if (conversationsResult.success && conversationsResult.success) {
+      if (conversationsResult.success && conversationsResult.data.length > 0) {
         setActiveConversationId(conversationsResult.data[0].id);
-        setIsLoading(false);
-      } else if (conversationsResult.error) {
-        console.log("Something went wrong...");
+        setConversations(
+          conversationsResult.data.map((conversation) => ({
+            id: conversation.id,
+            title: conversation.title,
+          })),
+        );
       }
+      setIsFetchingForConversations(false);
+      setIsConversationsFetched(true);
     }
-    fetchData();
+
+    fetchConversations();
   }, []);
 
   useEffect(() => {
+    if (!isConversationsFetched) return;
     async function fetchData() {
       setIsLoading(true);
-      const conversationsResult = await getConversations();
-
-      if (conversationsResult.success && conversationsResult.success) {
-        setConversations(
-          conversationsResult.data.map((conversation) => {
-            return { id: conversation.id, title: conversation.title };
-          }),
-        );
-      }
+      setIsFetchingForQuestions(true);
 
       const questionsResult = await getQuestions(activeConversationId);
       const answersResult = await getAnswers(activeConversationId);
@@ -67,6 +69,9 @@ export function ChatContextProvider({ children }) {
         answersResult.success &&
         documentsResult.success
       ) {
+        questionsResult.data.length !== 0
+          ? setHasQuestions(true)
+          : setHasQuestions(false);
         setQuestions(
           questionsResult.data.map((question) => {
             return {
@@ -99,6 +104,7 @@ export function ChatContextProvider({ children }) {
             };
           }),
         );
+        setIsFetchingForQuestions(false);
         setIsLoading(false);
       } else if (questionsResult.error || answersResult.error) {
         console.log("Something went wrong...");
@@ -238,12 +244,14 @@ export function ChatContextProvider({ children }) {
   // Context Value
   const value = {
     conversations,
+    isFetchingForConversations,
     activeConversationId,
     setActiveConversationId,
     createNewEmptyConversation,
     updateConversationTitle,
     deleteConversation,
     questions,
+    isFetchingForQuestions,
     storeQuestion,
     answers,
     createNewEmptyAnswer,
