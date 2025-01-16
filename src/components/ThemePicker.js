@@ -1,5 +1,6 @@
 "use client";
 
+import { addTheme, getTheme, replaceTheme } from "@/lib/supabase";
 import { useEffect, useState } from "react";
 import { IoCheckmark } from "react-icons/io5";
 
@@ -30,13 +31,24 @@ const themes = [
 ];
 
 function ThemePicker() {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState();
   const [themeColors, setThemeColors] = useState({});
 
-  const switchTheme = (themeName) => {
+  const switchTheme = async (themeName) => {
     setTheme(themeName);
     document.documentElement.setAttribute("data-theme", themeName);
+    await replaceTheme(themeName);
   };
+
+  useEffect(() => {
+    async function fetchedTheme() {
+      const response = await getTheme();
+      if (response) {
+        setTheme(response.data);
+      }
+    }
+    fetchedTheme();
+  }, []);
 
   useEffect(() => {
     const updatedColors = {};
@@ -44,7 +56,7 @@ function ThemePicker() {
       updatedColors[name] = getThemeColors(name);
     });
     setThemeColors(updatedColors);
-    document.documentElement.setAttribute("data-theme", theme); // Reset to current theme
+    document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
   return (
@@ -57,7 +69,7 @@ function ThemePicker() {
           Icon={Icon}
           colors={themeColors[name]}
           isSelected={name === theme}
-          onClick={() => switchTheme(name)}
+          onClick={async () => await switchTheme(name)}
         />
       ))}
     </div>

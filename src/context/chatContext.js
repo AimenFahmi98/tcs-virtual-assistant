@@ -36,6 +36,21 @@ export function ChatContextProvider({ children }) {
       const conversationsResult = await getConversations();
 
       if (conversationsResult.success && conversationsResult.success) {
+        setActiveConversationId(conversationsResult.data[0].id);
+        setIsLoading(false);
+      } else if (conversationsResult.error) {
+        console.log("Something went wrong...");
+      }
+    }
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      const conversationsResult = await getConversations();
+
+      if (conversationsResult.success && conversationsResult.success) {
         setConversations(
           conversationsResult.data.map((conversation) => {
             return { id: conversation.id, title: conversation.title };

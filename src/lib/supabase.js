@@ -6,6 +6,61 @@ const supabaseUrl = "https://ssiznirqzcgkeuzesfad.supabase.co";
 const supabaseKey = process.env.SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+export async function getTheme() {
+  try {
+    // Perform the query with a filter for the conversationId
+    const { data: theme, error } = await supabase
+      .from("themes")
+      .select("name")
+      .single();
+
+    // Handle potential errors from Supabase
+    if (error) {
+      console.error("Error fetching theme:", error.message);
+      return { success: false, error: error.message, data: null };
+    }
+
+    // Handle case where no data is returned
+    if (!theme || theme.length === 0) {
+      console.warn("No theme found.");
+      return { success: true, error: null, data: null };
+    }
+
+    // Return the filtered data if successful
+    return { success: true, error: null, data: theme.name };
+  } catch (err) {
+    // Handle unexpected errors
+    console.error("Unexpected error while fetching theme:", err);
+    return { success: false, error: err.message, data: null };
+  }
+}
+
+export async function replaceTheme(theme) {
+  try {
+    // Delete all existing themes
+    await supabase.from("themes").delete().neq("id", 0);
+
+    // Insert the new theme into the "themes" table
+    const { data, error } = await supabase
+      .from("themes")
+      .insert([{ name: theme }])
+      .select();
+
+    // Handle potential errors from Supabase
+    if (error) {
+      console.error("Error adding theme:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Return the inserted data if successful
+    return { success: true, data };
+  } catch (err) {
+    // Handle unexpected errors
+    console.error("Unexpected error while adding theme:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function getQuestions(conversationId) {
   try {
     // Perform the query with a filter for the conversationId
@@ -22,7 +77,10 @@ export async function getQuestions(conversationId) {
 
     // Handle case where no data is returned
     if (!questions || questions.length === 0) {
-      console.warn("No questions found for the given conversationId.");
+      console.warn(
+        "No questions found for the given conversationId:",
+        conversationId,
+      );
       return { success: true, error: null, data: [] };
     }
 

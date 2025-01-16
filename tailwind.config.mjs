@@ -34,20 +34,6 @@ export default {
   plugins: [
     plugin(function ({ addBase }) {
       addBase({
-        ":root": {
-          "--color-primary": "#292929", // Darker base color
-          "--color-primary-light": "#2f2f2fb5", // Lighter variation
-          "--color-primary-dark": "#323232d9", // Even darker
-          "--color-primary-darker": "#323232d9",
-          "--color-secondary": "#374151", // Secondary shade
-          "--color-background": "#212121", // Dark background
-          "--color-background-accent-secondary": "#2e2e2e",
-          "--color-accent": "#44403c",
-          "--color-accent-light": "#ffe4e455",
-          "--color-accent-secondary": "#fcd34d",
-          "--color-text": "#ececec", // Light text
-          "--color-text-light": "rgb(156 163 175)", // Muted light text
-        },
         '[data-theme="light"]': {
           "--color-primary": "#f3f4f6", // Default theme colors
           "--color-primary-light": "#f9fafb",
