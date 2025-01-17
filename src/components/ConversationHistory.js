@@ -8,7 +8,7 @@ function ConversationHistory() {
   const context = useChatContext();
 
   return (
-    <div className="flex max-h-[70%] min-h-[70%] w-full flex-col items-start justify-start gap-4 px-4">
+    <div className="flex max-h-[70%] min-h-[70%] w-full flex-col items-start justify-start gap-4 overflow-visible px-4">
       <span className="text-md font-bold text-text">Conversations</span>
       {context.isFetchingForConversations ? (
         <Loading />
@@ -19,6 +19,7 @@ function ConversationHistory() {
               title={conversation.title}
               isActive={conversation.id === context.activeConversationId}
               setActive={() => context.setActiveConversationId(conversation.id)}
+              conversationId={conversation.id}
               key={conversation.id}
             />
           ))}
