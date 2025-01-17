@@ -462,3 +462,22 @@ export async function getDocuments() {
     return { success: false, error: err.message };
   }
 }
+
+export async function getAllRAGSelectedDocuments() {
+  try {
+    const { data, error } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("isSelectedForRAG", true);
+
+    if (error) {
+      console.error("Error fetching selected documents:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Unexpected error fetching selected documents:", err);
+    return { success: false, error: err.message };
+  }
+}

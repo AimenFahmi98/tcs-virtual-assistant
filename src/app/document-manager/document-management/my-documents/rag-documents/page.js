@@ -1,9 +1,22 @@
-function page() {
-  return (
-    <div className="flex h-full w-full items-center justify-center">
-      Selected for RAG
-    </div>
-  );
+import DocumentTable from "@/components/DocumentTable";
+import { getAllRAGSelectedDocuments } from "@/lib/supabase";
+
+async function getAllDocuments() {
+  try {
+    const response = await getAllRAGSelectedDocuments();
+    if (response.success) {
+      return response.data;
+    } else {
+      throw new Error(response.error);
+    }
+  } catch (error) {
+    console.error("Error fetching documents", error);
+  }
+}
+
+async function page() {
+  const documents = await getAllDocuments();
+  return <DocumentTable documents={documents} />;
 }
 
 export default page;

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
+import { IoClose } from "react-icons/io5";
 
 function SlidingExtensionMenu({ children, onExpand, onClose, className }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -43,12 +44,18 @@ function SlidingExtensionMenu({ children, onExpand, onClose, className }) {
 
         <div
           ref={containerRef}
-          className={`absolute right-0 top-0 flex h-[98%] transform items-center justify-center overflow-hidden rounded-lg border border-primary_dark bg-primary_light shadow-sm transition-transform duration-300 ${
+          className={`absolute right-0 top-0 flex h-full transform items-center justify-center overflow-hidden rounded-xl border border-primary_dark bg-primary_light shadow-md_custom transition-transform duration-300 ${
             isExpanded
               ? "translate-x-[12px] opacity-100"
-              : "translate-x-[150%] opacity-0"
+              : "translate-x-full opacity-0"
           }`}
         >
+          <button
+            className="rounded-xl px-2 py-2 hover:bg-primary"
+            onClick={() => setIsExpanded(false)}
+          >
+            <IoClose className="h-5 w-5" />
+          </button>
           {children}
         </div>
       </div>

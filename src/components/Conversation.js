@@ -14,23 +14,23 @@ function Conversation({ title, isActive, setActive, conversationId }) {
     <div
       className={`rounded-xl px-4 py-2 ${
         isActive ? "bg-primary_dark" : "bg-primary"
-      } relative w-full text-text hover:text-text_light`}
+      } relative w-full overflow-hidden text-text hover:text-text_light`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {(isHovered || isMenuExpanded) && (
         <SlidingExtensionMenu
           className={
-            "absolute right-0 top-0 h-full rounded-lg bg-inherit px-3 text-text"
+            "absolute right-0 top-0 h-full rounded-xl bg-inherit px-3 text-text"
           }
           onExpand={() => setIsMenuExpanded(true)}
           onClose={() => setIsMenuExpanded(false)}
         >
-          <button className="px-2 py-2 hover:bg-primary">
+          <button className="rounded-xl px-2 py-2 hover:bg-primary">
             <BiEdit className="h-5 w-5" />
           </button>
           <button
-            className="px-2 py-2 hover:bg-primary"
+            className="rounded-xl px-2 py-2 hover:bg-primary"
             onClick={() => context.deleteConversation(conversationId)}
           >
             <TbTrash className="h-5 w-5 text-red-400" />
