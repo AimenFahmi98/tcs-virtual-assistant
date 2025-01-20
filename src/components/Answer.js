@@ -126,8 +126,18 @@ function SourceTag({ fileStats }) {
       <div className="mr-2 flex items-center justify-center">
         {IconComponent}
       </div>
-      <div className={`w-30 text-ellipsis text-nowrap ${textColor}`}>
+      <div className={`w-30 mr-2 text-ellipsis text-nowrap ${textColor}`}>
         {fileStats.file}
+      </div>
+      {/* <div className="ml-2 text-gray-500">{fileStats.relevance}</div> */}
+      <div className="ml-2 flex items-center">
+        <div className="relative h-2 w-16 rounded-full bg-gray-200">
+          <div
+            className="absolute left-0 top-0 h-full rounded-full bg-green-500"
+            style={{ width: fileStats.relevance }}
+          ></div>
+        </div>
+        {/* <div className="ml-2 text-gray-500">{fileStats.relevance}</div> */}
       </div>
     </div>
   );

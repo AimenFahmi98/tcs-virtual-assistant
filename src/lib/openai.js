@@ -256,7 +256,7 @@ class OpenaiController {
     const results = await this.pinecone.queryForEmbedding(
       RAGDocuments,
       embedding,
-      20,
+      10,
     );
 
     const context = results.map(
