@@ -51,11 +51,13 @@ function Answer({ answer, filesUsedAsContext }) {
             <div className="mt-2 inline-block max-w-full overflow-hidden rounded-xl text-left">
               <h2 className="mb-4 text-xl font-[500]">Sources</h2>
               <div className="flex w-full gap-4 overflow-scroll">
-                {calculateFileStatistics(filesUsedAsContext).map(
-                  (fileStats, index) => (
+                {calculateFileStatistics(filesUsedAsContext)
+                  .sort(
+                    (a, b) => parseFloat(b.relevance) - parseFloat(a.relevance),
+                  )
+                  .map((fileStats, index) => (
                     <SourceTag fileStats={fileStats} key={index} />
-                  ),
-                )}
+                  ))}
               </div>
             </div>
           )}
@@ -134,10 +136,12 @@ function SourceTag({ fileStats }) {
         <div className="relative h-2 w-16 rounded-full bg-gray-200">
           <div
             className="absolute left-0 top-0 h-full rounded-full bg-green-500"
-            style={{ width: fileStats.relevance }}
+            style={{ width: `${Math.round(parseFloat(fileStats.relevance))}%` }}
           ></div>
         </div>
-        {/* <div className="ml-2 text-gray-500">{fileStats.relevance}</div> */}
+        <div className="ml-2 text-gray-500">
+          {Math.round(parseFloat(fileStats.relevance))}%
+        </div>
       </div>
     </div>
   );
