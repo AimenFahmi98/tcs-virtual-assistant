@@ -1,4 +1,3 @@
-import { metadata } from "@/app/layout";
 import { Pinecone } from "@pinecone-database/pinecone";
 import { getChunkByDocumentId } from "./supabase";
 class PineconeController {

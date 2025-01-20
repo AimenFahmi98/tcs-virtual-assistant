@@ -1,5 +1,6 @@
 import { BsFillFileEarmarkTextFill } from "react-icons/bs";
 import { FaFilePdf, FaFileWord } from "react-icons/fa";
+import { format } from "date-fns";
 
 /**
  * Convert size in kilobytes to a readable format.
@@ -18,7 +19,7 @@ function formatSize(sizeInKB) {
   }
 }
 
-function DocumentRow({ document }) {
+function DocumentRow({ document, toggleSelection, isSelected }) {
   const documentTypeIcons = new Map([
     ["pdf", <FaFilePdf className="h-5 w-5 text-red-500" key={"pdf"} />],
     ["docx", <FaFileWord className="h-5 w-5 text-blue-500" key={"docx"} />],
@@ -31,14 +32,25 @@ function DocumentRow({ document }) {
     ],
   ]);
 
+  console.log(document.isSelectedForRAG);
+
   return (
-    <tr key={document.id} className="hover:bg-primary_light">
+    <tr
+      className="hover:bg-primary_light"
+      onClick={() => toggleSelection(document)}
+    >
       <td className="flex items-center justify-start px-6 py-4">
+        <input
+          type="checkbox"
+          className="mr-4 hover:cursor-pointer"
+          checked={isSelected()}
+          onChange={() => {}}
+        />
         {documentTypeIcons.get(document.type)}
         <span className="px-3 py-4 text-left">{document.name}</span>
       </td>
       <td className="px-6 py-4">
-        {new Date(document.created_at).toLocaleString()}
+        {format(new Date(document.created_at), "yyyy-MM-dd HH:mm:ss")}
       </td>
       <td className="px-6 py-4">{formatSize(document.size / 1024)}</td>
 

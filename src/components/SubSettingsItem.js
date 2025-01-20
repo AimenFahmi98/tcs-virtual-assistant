@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 function SubSettingsItem({ title, href }) {
   const pathname = usePathname(); // Get the current pathname
   const isSelected = pathname === `${href}`;
-  console.log("isSelected", isSelected);
 
   return (
     <Link

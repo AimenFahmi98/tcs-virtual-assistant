@@ -8,7 +8,7 @@ function DocumentManagerHeader() {
   const [activeTab, setActiveTab] = useState("All");
 
   return (
-    <div className="flex items-center justify-between py-3 pl-8 pr-2">
+    <div className="sticky left-0 top-0 flex w-full items-center justify-between bg-background py-3 pl-8 pr-2">
       <div className="flex w-[80%] justify-start text-text_light">
         <Link
           href="/document-manager/document-management/my-documents/all-documents"

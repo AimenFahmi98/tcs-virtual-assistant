@@ -9,8 +9,8 @@ import {
   getAnswers,
   getConversations,
   getQuestions,
-  getDocuments,
   storeNewConversationTitle,
+  getAllRAGSelectedDocuments,
 } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -62,7 +62,8 @@ export function ChatContextProvider({ children }) {
 
       const questionsResult = await getQuestions(activeConversationId);
       const answersResult = await getAnswers(activeConversationId);
-      const documentsResult = await getDocuments(activeConversationId);
+      const documentsResult =
+        await getAllRAGSelectedDocuments(activeConversationId);
 
       if (
         questionsResult.success &&

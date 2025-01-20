@@ -481,3 +481,80 @@ export async function getAllRAGSelectedDocuments() {
     return { success: false, error: err.message };
   }
 }
+
+export async function deleteDocumentsByIds(documentIds) {
+  try {
+    // Delete the documents from the "documents" table
+    const { data, error } = await supabase
+      .from("documents")
+      .delete()
+      .in("id", documentIds);
+
+    // Handle potential errors from Supabase
+    if (error) {
+      console.error("Error deleting documents:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Return success if the documents were deleted
+    if (!data || data.length === 0) {
+      console.warn("No documents found with the specified IDs.");
+      return {
+        success: true,
+        message: "No documents found with the specified IDs.",
+      };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    // Handle unexpected errors
+    console.error("Unexpected error while deleting documents:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function selectDocumentsForRAG(documentIds) {
+  try {
+    // Update the isSelectedForRAG property to true for the specified document IDs
+    const { data, error } = await supabase
+      .from("documents")
+      .update({ isSelectedForRAG: true })
+      .in("id", documentIds);
+
+    // Handle potential errors from Supabase
+    if (error) {
+      console.error("Error updating documents:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Return success if the documents were updated
+    return { success: true, data };
+  } catch (err) {
+    // Handle unexpected errors
+    console.error("Unexpected error while updating documents:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+export async function unselectDocumentsForRAG(documentIds) {
+  try {
+    // Update the isSelectedForRAG property to false for the specified document IDs
+    const { data, error } = await supabase
+      .from("documents")
+      .update({ isSelectedForRAG: false })
+      .in("id", documentIds);
+
+    // Handle potential errors from Supabase
+    if (error) {
+      console.error("Error updating documents:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Return success if the documents were updated
+    return { success: true, data };
+  } catch (err) {
+    // Handle unexpected errors
+    console.error("Unexpected error while updating documents:", err);
+    return { success: false, error: err.message };
+  }
+}
