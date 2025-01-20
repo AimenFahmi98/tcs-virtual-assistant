@@ -1,4 +1,4 @@
-import ChatSidebar from "@/app/(routes)/ai-assistant/_components/ChatSidebar";
+import ChatSidebar from "@/app/(routes)/virtual-assistant/_components/ChatSidebar";
 import Header from "@/app/ui-components/Header";
 import { ChatContextProvider } from "@/context/chatContext";
 

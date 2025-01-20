@@ -4,10 +4,12 @@ import { useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Spinner from "./Spinner";
+import Spinner from "@/app/ui-components/Spinner";
+import { useRouter } from "next/navigation";
 
 function BtnUploadDocument() {
   const [isUploading, setIsUploading] = useState(false);
+  const router = useRouter();
 
   const handleFileUpload = async (event) => {
     const fileInput = event.target; // Reference to the input element
@@ -36,6 +38,8 @@ function BtnUploadDocument() {
         toast.success(result.message, {
           position: "top-right",
         });
+        // Refresh the current route
+        router.refresh();
       } else {
         // Display error toast
         toast.error(`Error: ${result.error}`, {

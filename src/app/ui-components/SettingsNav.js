@@ -6,7 +6,7 @@ function SettingsNav({ children }) {
     <div className="flex h-full w-full flex-col p-4">
       <Link
         className="ml-24 flex items-center justify-center gap-4 text-nowrap text-text_light hover:text-text"
-        href={"/ai-assistant"}
+        href={"/virtual-assistant"}
       >
         <BiArrowBack className="h-6 w-6" />
         <span>Virtual Assistant</span>

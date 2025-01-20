@@ -1,5 +1,7 @@
+import PageYetToBeWorkedOn from "@/app/ui-components/PageYetToBeWorkedOn";
+
 function page() {
-  return <div>Profile</div>;
+  return <PageYetToBeWorkedOn />;
 }
 
 export default page;

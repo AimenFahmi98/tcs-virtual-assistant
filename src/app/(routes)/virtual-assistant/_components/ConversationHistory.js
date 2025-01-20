@@ -2,7 +2,7 @@
 
 import { useChatContext } from "@/context/chatContext";
 import Conversation from "./Conversation";
-import Loading from "@/app/(routes)/ai-assistant/loading";
+import Loading from "@/app/(routes)/virtual-assistant/loading";
 
 function ConversationHistory() {
   const context = useChatContext();

@@ -2,6 +2,7 @@
 
 import {
   deleteDocumentsByIds,
+  deleteFilesFromSupabase,
   selectDocumentsForRAG,
   unselectDocumentsForRAG,
 } from "@/lib/supabase";
@@ -10,27 +11,44 @@ import { useState } from "react";
 import { BiTrash } from "react-icons/bi";
 import { IoMdCheckboxOutline } from "react-icons/io";
 import { RxCrossCircled } from "react-icons/rx";
+import { useRouter } from "next/navigation";
 
 function DocumentTable({ documents }) {
   const [selectedDocuments, setSelectedDocuments] = useState(new Set());
+  const [isProcessing, setIsProcessing] = useState(false);
+  const router = useRouter();
+
+  const handleOperation = async (operation, ids) => {
+    setIsProcessing(true);
+    try {
+      await operation(ids);
+      setSelectedDocuments(new Set());
+      router.refresh();
+    } catch (error) {
+      console.error("Operation failed:", error);
+      // Add error toast notification here
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const toggleSelection = (document) => {
     setSelectedDocuments((prevSelectedDocuments) => {
-      // Create a shallow copy of the previous set to ensure immutability
       const newSelectedDocuments = new Set(prevSelectedDocuments);
 
-      if (newSelectedDocuments.has(document.id)) {
-        newSelectedDocuments.delete(document.id); // Remove document if already selected
+      if (newSelectedDocuments.has(document)) {
+        newSelectedDocuments.delete(document); // Remove entire document if already selected
       } else {
-        newSelectedDocuments.add(document.id); // Add document if not selected
+        newSelectedDocuments.add(document); // Add entire document if not selected
       }
 
-      return newSelectedDocuments; // Return the updated set
+      return newSelectedDocuments;
     });
   };
 
   const isDocumentSelected = (documentId) => {
-    return selectedDocuments.has(documentId); // Check if the document is selected
+    // Convert Set to Array to use find method
+    return Array.from(selectedDocuments).some((doc) => doc.id === documentId);
   };
 
   return (
@@ -38,10 +56,15 @@ function DocumentTable({ documents }) {
       {selectedDocuments.size > 0 && (
         <div className="flex items-center justify-start gap-4 bg-background">
           <button
+            disabled={isProcessing}
             onClick={() => {
-              // Call the supabase function to delete selected documents
-              deleteDocumentsByIds(Array.from(selectedDocuments));
-              setSelectedDocuments(new Set()); // Clear the selection after deletion
+              const ids = Array.from(selectedDocuments).map((doc) => doc.id);
+              handleOperation(async () => {
+                await deleteDocumentsByIds(ids);
+                await deleteFilesFromSupabase(
+                  Array.from(selectedDocuments).map((doc) => doc.name),
+                );
+              }, ids);
             }}
             className="mb-2 ml-8 flex items-center justify-center rounded-lg bg-red-500 px-3 py-2 text-sm text-white"
           >
@@ -49,10 +72,10 @@ function DocumentTable({ documents }) {
             <span>Delete</span>
           </button>
           <button
+            disabled={isProcessing}
             onClick={() => {
-              // Call the supabase function to select documents for RAG
-              selectDocumentsForRAG(Array.from(selectedDocuments));
-              setSelectedDocuments(new Set()); // Clear the selection after selection
+              const ids = Array.from(selectedDocuments).map((doc) => doc.id);
+              handleOperation(selectDocumentsForRAG, ids);
             }}
             className="mb-2 flex items-center justify-center rounded-lg border border-primary_dark bg-background px-3 py-2 text-sm text-text hover:bg-primary_light"
           >
@@ -60,10 +83,10 @@ function DocumentTable({ documents }) {
             <span>Select for RAG</span>
           </button>
           <button
+            disabled={isProcessing}
             onClick={() => {
-              // Call the supabase function to unselect documents for RAG
-              unselectDocumentsForRAG(Array.from(selectedDocuments));
-              setSelectedDocuments(new Set()); // Clear the selection after unselection
+              const ids = Array.from(selectedDocuments).map((doc) => doc.id);
+              handleOperation(unselectDocumentsForRAG, ids);
             }}
             className="mb-2 flex items-center justify-center rounded-lg border border-primary_dark bg-background px-3 py-2 text-sm text-text hover:bg-primary_light"
           >

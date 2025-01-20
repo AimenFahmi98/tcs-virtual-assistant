@@ -4,7 +4,7 @@ import { ChatContextProvider, useChatContext } from "@/context/chatContext";
 import MessagesBox from "./MessagesBox";
 import QuestionBox from "./QuestionBox";
 import VAWelcome from "./VAWelcome";
-import Loading from "@/app/(routes)/ai-assistant/loading";
+import Loading from "@/app/(routes)/virtual-assistant/loading";
 
 function VirtualAssistant() {
   const context = useChatContext();

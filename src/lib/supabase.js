@@ -353,6 +353,32 @@ export async function uploadFileToSupabase(file, bucketName = "documents") {
   }
 }
 
+/**
+ * Delete multiple files from Supabase storage.
+ * @param {string[]} fileNames - Array of file names to delete.
+ * @param {string} bucketName - The Supabase storage bucket name.
+ * @returns {object} - Object containing success status and message.
+ */
+export async function deleteFilesFromSupabase(
+  fileNames,
+  bucketName = "documents",
+) {
+  try {
+    const filePaths = fileNames.map((fileName) => `uploads/${fileName}`);
+    const { error } = await supabase.storage.from(bucketName).remove(filePaths);
+
+    if (error) {
+      console.error("Error deleting files from Supabase:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, message: "Files deleted successfully" };
+  } catch (err) {
+    console.error("Unexpected error during files deletion:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function addDocumentToSupabase(document) {
   const { data, error } = await supabase
     .from("documents")
