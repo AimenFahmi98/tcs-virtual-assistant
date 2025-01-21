@@ -10,6 +10,18 @@ import {
   MdOutlineWbTwilight,
 } from "react-icons/md";
 
+/**
+ * Retrieves theme colors from CSS variables based on the specified theme.
+ * @param {string} theme - The theme name to set as data-theme attribute.
+ * @returns {Object} An object containing theme colors with the following properties:
+ *   @property {string} primary - The primary color
+ *   @property {string} primaryLight - The light variant of primary color
+ *   @property {string} primaryDarker - The darker variant of primary color
+ *   @property {string} accent - The accent color
+ *   @property {string} background - The background color
+ *   @property {string} text - The main text color
+ *   @property {string} textLight - The light variant of text color
+ */
 function getThemeColors(theme) {
   document.documentElement.setAttribute("data-theme", theme);
   const rootStyles = getComputedStyle(document.documentElement);
@@ -24,12 +36,34 @@ function getThemeColors(theme) {
   };
 }
 
+/**
+ * Array of theme objects representing different visual modes for the application.
+ * @type {Array<{name: string, label: string, Icon: React.ComponentType}>}
+ * @constant
+ * @description Each theme object contains:
+ * - name: The internal identifier for the theme
+ * - label: The user-friendly display name for the theme
+ * - Icon: A React component representing the theme's icon
+ */
 const themes = [
   { name: "light", label: "Light Mode", Icon: MdOutlineLightMode },
   { name: "spring", label: "Spring Mode", Icon: MdOutlineWbTwilight },
   { name: "dark", label: "Dark Mode", Icon: MdNightlightRound },
 ];
 
+/**
+ * A component that renders theme selection buttons and manages theme switching functionality.
+ * Fetches initial theme on mount and updates theme colors when theme changes.
+ * Allows users to switch between different themes and updates the DOM accordingly.
+ *
+ * @component
+ * @returns {JSX.Element} A div containing theme selection buttons
+ *
+ * @example
+ * return (
+ *   <ThemePicker />
+ * )
+ */
 function ThemePicker() {
   const [theme, setTheme] = useState();
   const [themeColors, setThemeColors] = useState({});
@@ -76,6 +110,18 @@ function ThemePicker() {
   );
 }
 
+/**
+ * A button component for theme selection that displays theme colors and an icon
+ * @param {Object} props - The component props
+ * @param {string} props.label - The text label for the theme button
+ * @param {React.ComponentType} props.Icon - The icon component to display
+ * @param {Object} props.colors - Object containing theme colors
+ * @param {string} [props.colors.primary] - Primary theme color
+ * @param {string} [props.colors.text] - Text color for the theme
+ * @param {Function} props.onClick - Click handler function
+ * @param {boolean} props.isSelected - Whether this theme is currently selected
+ * @returns {JSX.Element} A theme selection button component
+ */
 function ThemeButton({ label, Icon, colors, onClick, isSelected }) {
   // Create an array of color values from the colors object (excluding undefined or null values)
   const colorCircles = Object.values(colors || {}).filter((color) => color);

@@ -1,6 +1,12 @@
 import { BsLayoutSidebarInset } from "react-icons/bs";
 
-function BtnOpenSidebar({ setIsOpen, hoverBgColor }) {
+/**
+ * A button component that toggles the sidebar visibility
+ * @param {Object} props - Component properties
+ * @param {Function} props.setIsOpen - State setter function to toggle sidebar visibility
+ * @returns {JSX.Element} A button element with a sidebar icon
+ */
+function BtnOpenSidebar({ setIsOpen }) {
   return (
     <button
       onClick={() => setIsOpen((isOpen) => !isOpen)}

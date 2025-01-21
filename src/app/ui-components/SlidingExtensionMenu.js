@@ -4,6 +4,28 @@ import { useEffect, useRef, useState } from "react";
 import { HiOutlineDotsHorizontal } from "react-icons/hi";
 import { IoClose } from "react-icons/io5";
 
+/**
+ * A sliding extension menu component that expands and collapses with animation.
+ * Closes when clicked outside the menu area.
+ *
+ * @component
+ * @param {Object} props - The component props
+ * @param {React.ReactNode} props.children - The content to be displayed inside the sliding menu
+ * @param {Function} props.onExpand - Callback function triggered when the menu expands
+ * @param {Function} props.onClose - Callback function triggered when the menu closes
+ * @param {string} props.className - Additional CSS classes to apply to the container
+ *
+ * @returns {JSX.Element} A sliding extension menu with animation and click-outside behavior
+ *
+ * @example
+ * <SlidingExtensionMenu
+ *   onExpand={() => console.log('Menu expanded')}
+ *   onClose={() => console.log('Menu closed')}
+ *   className="custom-class"
+ * >
+ *   <MenuContent />
+ * </SlidingExtensionMenu>
+ */
 function SlidingExtensionMenu({ children, onExpand, onClose, className }) {
   const [isExpanded, setIsExpanded] = useState(false);
 

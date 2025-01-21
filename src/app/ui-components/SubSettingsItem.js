@@ -3,6 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+/**
+ * A component that renders a sub-settings navigation item as a link.
+ *
+ * @component
+ * @param {Object} props - The component props
+ * @param {string} props.title - The text to display for the sub-settings item
+ * @param {string} props.href - The URL path that the link should navigate to
+ * @returns {JSX.Element} A Link component styled as a sub-settings item that highlights when selected
+ */
 function SubSettingsItem({ title, href }) {
   const pathname = usePathname(); // Get the current pathname
   const isSelected = pathname === `${href}`;

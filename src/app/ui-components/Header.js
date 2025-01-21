@@ -1,8 +1,16 @@
-import Link from "next/link";
 import { BiSolidConversation } from "react-icons/bi";
 import { IoDocuments } from "react-icons/io5";
 import { HiCog } from "react-icons/hi2";
+import MenuLink from "./MenuLink";
 
+/**
+ * Header component that displays the main navigation menu of the application.
+ * Contains links to the Virtual Assistant, Document Manager, and Settings pages.
+ * Uses MenuLink components to render navigation items with icons.
+ * Layout is structured using CSS Grid with three columns.
+ * @component
+ * @returns {JSX.Element} A header component with navigation menu items
+ */
 function Header() {
   return (
     <div className="col-start-2 text-text">
@@ -29,18 +37,6 @@ function Header() {
         </div>
       </div>
     </div>
-  );
-}
-
-function MenuLink({ title, icon, href }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center justify-center gap-2 rounded-full border border-primary_darker px-4 py-2 text-sm hover:bg-primary_light"
-    >
-      {icon}
-      <span className="max-w-24 truncate">{title}</span>
-    </Link>
   );
 }
 

@@ -1,5 +1,17 @@
 import React from "react";
 
+/**
+ * A React component that displays an "Under Construction" message for pages that are yet to be implemented.
+ * The component shows a styled message box with animated text and emojis indicating that the page is being worked on.
+ *
+ * @component
+ * @returns {JSX.Element} A div container with a centered message box displaying the construction status
+ *
+ * @example
+ * ```jsx
+ * <PageYetToBeWorkedOn />
+ * ```
+ */
 function PageYetToBeWorkedOn() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-r from-primary_light to-primary_darker">

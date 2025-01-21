@@ -1,5 +1,15 @@
 import React from "react";
 
+/**
+ * A reusable spinner component that displays a loading animation.
+ *
+ * @component
+ * @param {Object} props - The component props
+ * @param {string} [props.color="var(--color-text)"] - The color of the spinner (CSS color value)
+ * @param {string} [props.size="32px"] - The size of the spinner (CSS dimension value)
+ * @param {string} [props.borderSize="4px"] - The thickness of the spinner's border (CSS dimension value)
+ * @returns {JSX.Element} A centered spinning circle animation
+ */
 function Spinner({
   color = "var(--color-text)",
   size = "32px",
