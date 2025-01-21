@@ -4,6 +4,19 @@ import { useState } from "react";
 import BtnUploadDocument from "./BtnUploadDocument";
 import Link from "next/link";
 
+/**
+ * A component that renders the header section of the document manager.
+ * Contains navigation tabs for 'All Documents' and 'Selected for RAG' sections,
+ * along with an upload document button.
+ *
+ * @component
+ * @returns {JSX.Element} A header component with navigation tabs and upload button
+ *
+ * @example
+ * return (
+ *   <DocumentManagerHeader />
+ * )
+ */
 function DocumentManagerHeader() {
   const [activeTab, setActiveTab] = useState("All");
 

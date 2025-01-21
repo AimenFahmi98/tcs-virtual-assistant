@@ -3,9 +3,15 @@ import { FaFilePdf, FaFileWord } from "react-icons/fa";
 import { format } from "date-fns";
 
 /**
- * Convert size in kilobytes to a readable format.
- * @param {number} sizeInKB - The size in kilobytes.
- * @returns {string} - The formatted size string.
+ * Converts a size in kilobytes to a human-readable string representation
+ * with appropriate unit (KB, MB, GB, or TB).
+ *
+ * @param {number} sizeInKB - The size in kilobytes to format
+ * @returns {string} A formatted string with the size and appropriate unit
+ *
+ * @example
+ * formatSize(1500) // returns "1.5 MB"
+ * formatSize(500) // returns "500.0 KB"
  */
 function formatSize(sizeInKB) {
   if (sizeInKB < 1024) {
@@ -19,6 +25,20 @@ function formatSize(sizeInKB) {
   }
 }
 
+/**
+ * Renders a table row for a document with selection functionality and visual indicators
+ * @param {Object} props - Component properties
+ * @param {Object} props.document - Document object containing document details
+ * @param {string} props.document.type - Type of document (pdf, docx, txt)
+ * @param {string} props.document.name - Name of the document
+ * @param {string} props.document.created_at - Creation date of document
+ * @param {number} props.document.size - Size of document in bytes
+ * @param {number} props.document.nbChunks - Number of chunks in the document
+ * @param {boolean} props.document.isSelectedForRAG - Flag indicating if document is selected for RAG
+ * @param {Function} props.toggleSelection - Function to handle document selection
+ * @param {Function} props.isSelected - Function to check if document is currently selected
+ * @returns {JSX.Element} Table row component with document information and selection controls
+ */
 function DocumentRow({ document, toggleSelection, isSelected }) {
   const documentTypeIcons = new Map([
     ["pdf", <FaFilePdf className="h-5 w-5 text-red-500" key={"pdf"} />],

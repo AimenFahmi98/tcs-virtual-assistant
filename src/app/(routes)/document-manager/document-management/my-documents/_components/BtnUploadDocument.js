@@ -7,6 +7,28 @@ import "react-toastify/dist/ReactToastify.css";
 import Spinner from "@/app/ui-components/Spinner";
 import { useRouter } from "next/navigation";
 
+/**
+ * A button component that handles document file uploads.
+ *
+ * @component
+ * @description Renders a button that allows users to select and upload document files.
+ * The component manages the upload state, displays loading indicators, and shows
+ * toast notifications for success/error feedback.
+ *
+ * Features:
+ * - File selection through hidden input
+ * - Upload progress indication
+ * - Success/Error toast notifications
+ * - Automatic route refresh on successful upload
+ * - Input clearing after upload
+ *
+ * @returns {JSX.Element} A button component with file upload functionality
+ *
+ * @example
+ * return (
+ *   <BtnUploadDocument />
+ * )
+ */
 function BtnUploadDocument() {
   const [isUploading, setIsUploading] = useState(false);
   const router = useRouter();

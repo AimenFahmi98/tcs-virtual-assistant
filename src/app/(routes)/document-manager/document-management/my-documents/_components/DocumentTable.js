@@ -13,11 +13,45 @@ import { IoMdCheckboxOutline } from "react-icons/io";
 import { RxCrossCircled } from "react-icons/rx";
 import { useRouter } from "next/navigation";
 
+/**
+ * A component that renders a table of documents with selection and bulk operation capabilities.
+ *
+ * @component
+ * @param {Object} props
+ * @param {Array<Object>} props.documents - Array of document objects to display in the table
+ * @param {Object} props.documents[].id - Unique identifier for each document
+ * @param {string} props.documents[].name - Name of the document
+ * @param {Date} props.documents[].uploadDate - Date when document was uploaded
+ * @param {number} props.documents[].size - Size of the document
+ * @param {number} props.documents[].chunks - Number of chunks the document is divided into
+ * @param {boolean} props.documents[].selectedForRAG - Whether document is selected for RAG
+ *
+ * @returns {JSX.Element} A table component with document rows and bulk operation buttons
+ *
+ * @example
+ * const documents = [{
+ *   id: 1,
+ *   name: "document.pdf",
+ *   uploadDate: "2023-01-01",
+ *   size: 1024,
+ *   chunks: 5,
+ *   selectedForRAG: false
+ * }];
+ *
+ * return <DocumentTable documents={documents} />;
+ */
 function DocumentTable({ documents }) {
   const [selectedDocuments, setSelectedDocuments] = useState(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
 
+  /**
+   * Handles document operations asynchronously
+   * @param {Function} operation - The operation function to execute on documents
+   * @param {Array|string} ids - Document ID(s) to perform the operation on
+   * @returns {Promise<void>} A promise that resolves when the operation is complete
+   * @throws {Error} When the operation fails
+   */
   const handleOperation = async (operation, ids) => {
     setIsProcessing(true);
     try {
@@ -32,6 +66,14 @@ function DocumentTable({ documents }) {
     }
   };
 
+  /**
+   * Toggles the selection state of a document in the selected documents Set.
+   * If the document is already selected, it will be removed from the selection.
+   * If the document is not selected, it will be added to the selection.
+   *
+   * @param {Object} document - The document object to toggle selection for
+   * @returns {void}
+   */
   const toggleSelection = (document) => {
     setSelectedDocuments((prevSelectedDocuments) => {
       const newSelectedDocuments = new Set(prevSelectedDocuments);
@@ -46,6 +88,11 @@ function DocumentTable({ documents }) {
     });
   };
 
+  /**
+   * Checks if a document is currently selected in the documents table
+   * @param {string} documentId - The unique identifier of the document to check
+   * @returns {boolean} - True if the document is selected, false otherwise
+   */
   const isDocumentSelected = (documentId) => {
     // Convert Set to Array to use find method
     return Array.from(selectedDocuments).some((doc) => doc.id === documentId);
