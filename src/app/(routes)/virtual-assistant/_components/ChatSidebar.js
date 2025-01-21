@@ -6,6 +6,17 @@ import { useChat } from "@/context/chatContext";
 import ConversationHistory from "./ConversationHistory";
 import Sidebar from "@/app/ui-components/Sidebar";
 
+/**
+ * Renders a sidebar component for chat functionality
+ * @component
+ * @returns {JSX.Element} A sidebar containing conversation controls and history
+ * @description
+ * Displays a sidebar with:
+ * - New conversation creation button
+ * - Search button
+ * - List of conversation history
+ * Uses the chat context for managing conversations
+ */
 function ChatSidebar() {
   const context = useChat();
 

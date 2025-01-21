@@ -3,6 +3,14 @@
 import { useChat } from "@/context/chatContext";
 import { HiOutlineTrash } from "react-icons/hi2";
 
+/**
+ * A component that renders a question with delete functionality
+ * @param {Object} props - The component props
+ * @param {React.ReactNode} props.children - The content to be displayed inside the question
+ * @param {Function} props.handleDelete - Function to handle deletion of the question
+ * @param {number} props.questionId - Unique identifier for the question
+ * @returns {JSX.Element} A question component with delete functionality
+ */
 function Question({ children, handleDelete, questionId }) {
   const context = useChat();
 

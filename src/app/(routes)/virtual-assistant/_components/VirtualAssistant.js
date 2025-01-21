@@ -6,6 +6,16 @@ import QuestionBox from "./QuestionBox";
 import VAWelcome from "./VAWelcome";
 import Loading from "@/app/(routes)/virtual-assistant/loading";
 
+/**
+ * A component that renders a virtual assistant interface.
+ * Displays a loading state when fetching questions, and either shows
+ * a messages box with conversation history or a welcome screen depending
+ * on whether there are existing questions.
+ * Also includes a question box component for user input.
+ *
+ * @component
+ * @returns {JSX.Element} A virtual assistant interface component
+ */
 function VirtualAssistant() {
   const context = useChat();
 

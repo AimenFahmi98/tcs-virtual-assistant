@@ -1,6 +1,23 @@
 import { BsFillFileEarmarkTextFill } from "react-icons/bs";
 import { FaFilePdf, FaFileWord } from "react-icons/fa";
 
+/**
+ * Renders a tag component that displays file information with appropriate styling based on file extension. This is used to display RAG file information in the sources part of the virtual assistant's answers.
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {Object} props.fileStats - Statistics about the file
+ * @param {string} props.fileStats.file - The filename including extension
+ * @param {string|number} props.fileStats.relevance - Relevance score as percentage
+ *
+ * @returns {JSX.Element} A styled tag displaying file information including:
+ * - File icon (varies by extension)
+ * - Filename
+ * - Relevance score with progress bar
+ *
+ * Supports different styling for PDF, DOCX, TXT files with fallback styling for other types.
+ * Each file type has its own color scheme for border, text, icon and background.
+ */
 function SourceTag({ fileStats }) {
   const fileExtension = fileStats.file.split(".").pop().toLowerCase();
   let borderColor, textColor, IconComponent, bgColor, iconColor;

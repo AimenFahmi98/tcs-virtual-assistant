@@ -1,8 +1,15 @@
 import Image from "next/image";
 
+/**
+ * Renders a welcome component for the TCS Virtual Assistant interface.
+ * This component displays a TCS logo and a welcome message in a styled container.
+ *
+ * @component
+ * @return {JSX.Element} A styled welcome message container with the TCS logo
+ */
 function VAWelcome() {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 w-[45%] bg-primary_light rounded-3xl pb-8 pt-4 px-10">
+    <div className="flex w-[45%] flex-col items-center justify-center gap-4 rounded-3xl bg-primary_light px-10 pb-8 pt-4">
       <div className="flex items-center justify-center">
         <Image
           src={"/tcs-logo-no-text.webp"}

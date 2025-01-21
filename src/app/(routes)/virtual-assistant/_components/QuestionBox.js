@@ -1,16 +1,61 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { BsArrowUpCircleFill } from "react-icons/bs";
 import Spinner from "@/app/ui-components/Spinner";
 import { useChat } from "@/context/chatContext";
 import { LuAudioLines } from "react-icons/lu";
 
+/**
+ * A React component that renders an interactive question input box with form submission capabilities.
+ * The component includes text input with auto-expanding functionality and handles both text and voice input (not yet supported).
+ *
+ * @component
+ * @example
+ * return (
+ *   <QuestionBox />
+ * )
+ *
+ * @returns {JSX.Element} A form containing a textarea for question input and submission buttons
+ *
+ * Features:
+ * - Auto-adjusting textarea height based on content
+ * - Stream-based answer generation
+ * - Enter key submission support (without shift)
+ * - Loading state indication
+ * - Voice input capability (to be added)
+ * - Dynamic width expansion on focus
+ *
+ * @requires useRef from 'react'
+ * @requires useChat from context
+ * @requires BsArrowUpCircleFill from 'react-icons/bs'
+ * @requires LuAudioLines from 'react-icons/lu'
+ * @requires Spinner component
+ */
 function QuestionBox() {
   const textAreaRef = useRef();
   const formRef = useRef();
   const context = useChat();
 
+  /**
+   * Handles the submission of a question in the virtual assistant interface.
+   *
+   * This async function processes the question submission, sends it to the OpenAI API,
+   * handles the streaming response, and updates the UI accordingly. It also manages
+   * conversation titles and document context tracking.
+   *
+   * @param {Event} e - The form submission event
+   * @throws {Error} When there's an issue with the API communication
+   * @async
+   *
+   * The function performs the following steps:
+   * 1. Prevents form default behavior and validates input
+   * 2. Stores the question in the context
+   * 3. Sends question to OpenAI API with relevant document context
+   * 4. Processes streaming response and updates UI
+   * 5. Fetches and updates conversation title and used files
+   * 6. Handles error cases and resets loading state
+   */
   async function handleSubmitQuestion(e) {
     context.setIsGeneratingAnswer(true);
     e.preventDefault();
@@ -88,6 +133,13 @@ function QuestionBox() {
     }
   }
 
+  /**
+   * Dynamically adjusts the height of a textarea element up to a maximum number of lines.
+   * The function first resets the textarea's height to auto, then calculates and sets
+   * the new height based on content, ensuring it doesn't exceed the height of 7 lines.
+   * @function adjustTextAreaHeight
+   * @requires textAreaRef - React ref object pointing to the textarea element
+   */
   function adjustTextAreaHeight() {
     const maxNumberOfLines = 7;
     const textarea = textAreaRef.current;

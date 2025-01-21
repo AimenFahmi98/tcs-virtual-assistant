@@ -4,6 +4,15 @@ import { BiEdit } from "react-icons/bi";
 import { useChat } from "@/context/chatContext";
 import SlidingExtensionMenu from "@/app/ui-components/SlidingExtensionMenu";
 
+/**
+ * Renders a conversation component with hover effects and sliding menu
+ * @param {Object} props - Component properties
+ * @param {string} props.title - Title of the conversation
+ * @param {boolean} props.isActive - Whether the conversation is currently active
+ * @param {Function} props.setActive - Function to set this conversation as active
+ * @param {string} props.conversationId - Unique identifier for the conversation
+ * @returns {JSX.Element} A conversation component with title and menu options
+ */
 function Conversation({ title, isActive, setActive, conversationId }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);

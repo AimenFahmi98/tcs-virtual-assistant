@@ -4,6 +4,15 @@ import { useChat } from "@/context/chatContext";
 import Conversation from "./Conversation";
 import Loading from "@/app/(routes)/virtual-assistant/loading";
 
+/**
+ * Renders a list of conversations in a scrollable container.
+ * Uses the chat context to manage conversation state and display.
+ * Shows a loading state while fetching conversations.
+ * Each conversation is rendered as a clickable item that can be set as active.
+ *
+ * @returns {JSX.Element} A div containing the conversations list with a header
+ * @component
+ */
 function ConversationHistory() {
   const context = useChat();
 

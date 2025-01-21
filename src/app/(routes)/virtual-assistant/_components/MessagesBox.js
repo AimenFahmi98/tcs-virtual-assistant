@@ -5,6 +5,23 @@ import Answer from "./Answer";
 import Spinner from "@/app/ui-components/Spinner";
 import { useChat } from "@/context/chatContext";
 
+/**
+ * Renders a messages container component that displays a list of questions and their corresponding answers.
+ * Uses the chat context to manage the state of messages and loading status.
+ *
+ * @component
+ * @returns {JSX.Element} Returns either a scrollable div containing Question and Answer components, or a Spinner component when loading.
+ *
+ * @example
+ * return (
+ *   <MessagesBox />
+ * )
+ *
+ * @requires useChat - Custom hook that provides chat context
+ * @requires Question - Component that renders a question
+ * @requires Answer - Component that renders an answer
+ * @requires Spinner - Loading indicator component
+ */
 function MessagesBox() {
   const context = useChat();
 
