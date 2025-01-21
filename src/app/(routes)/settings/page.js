@@ -1,7 +1,7 @@
+import { redirect } from "next/navigation";
+
 function page() {
-  return (
-    <div className="flex items-center justify-center h-full">Settings</div>
-  );
+  redirect("/settings/appearance");
 }
 
 export default page;
