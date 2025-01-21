@@ -1,6 +1,10 @@
 import React from "react";
 
-function Spinner({ color = "black", size = "32px", borderSize = "4px" }) {
+function Spinner({
+  color = "var(--color-text)",
+  size = "32px",
+  borderSize = "4px",
+}) {
   return (
     <div className="flex h-full items-center justify-center">
       <div

@@ -1,3 +1,25 @@
+/**
+ * @fileoverview Supabase client configuration and database operations module.
+ * This module provides a comprehensive set of functions for interacting with a Supabase database,
+ * handling conversations, questions, answers, themes, and document management.
+ *
+ * Key features include:
+ * - Conversation management (CRUD operations)
+ * - Q&A handling (questions and answers storage)
+ * - Theme management
+ * - Document storage and retrieval
+ * - File upload and management
+ * - Document chunking for RAG (Retrieval-Augmented Generation)
+ *
+ * @module supabase
+ * @requires @supabase/supabase-js
+ *
+ * @example
+ * import { getConversations, addQuestion, uploadFileToSupabase } from './supabase';
+ *
+ * @author [Your Name]
+ * @version 1.0.0
+ */
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
@@ -6,6 +28,14 @@ const supabaseUrl = "https://ssiznirqzcgkeuzesfad.supabase.co";
 const supabaseKey = process.env.SERVICE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+/**
+ * Retrieves the current theme from the database.
+ * @async
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {string|null} .error - Error message if any
+ * @returns {string|null} .data - Theme name if found
+ */
 export async function getTheme() {
   try {
     // Perform the query with a filter for the conversationId
@@ -35,6 +65,15 @@ export async function getTheme() {
   }
 }
 
+/**
+ * Replaces the existing theme with a new one.
+ * @async
+ * @param {string} theme - The new theme name to be set
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Inserted theme data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function replaceTheme(theme) {
   try {
     // Delete all existing themes
@@ -61,6 +100,15 @@ export async function replaceTheme(theme) {
   }
 }
 
+/**
+ * Retrieves questions for a specific conversation.
+ * @async
+ * @param {string|number} conversationId - The ID of the conversation
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Array|null} .data - Array of question objects if found
+ * @returns {string|null} .error - Error message if any
+ */
 export async function getQuestions(conversationId) {
   try {
     // Perform the query with a filter for the conversationId
@@ -93,6 +141,15 @@ export async function getQuestions(conversationId) {
   }
 }
 
+/**
+ * Retrieves answers for a specific conversation.
+ * @async
+ * @param {string|number} conversationId - The ID of the conversation
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Array|null} .data - Array of answer objects if found
+ * @returns {string|null} .error - Error message if any
+ */
 export async function getAnswers(conversationId) {
   try {
     let { data: answers, error } = await supabase
@@ -121,6 +178,16 @@ export async function getAnswers(conversationId) {
   }
 }
 
+/**
+ * Adds a new question to the database.
+ * @async
+ * @param {string} content - The content of the question
+ * @param {string|number} conversationId - The ID of the conversation
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Inserted question data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function addQuestion(content, conversationId) {
   try {
     // Insert the question into the "questions" table
@@ -144,6 +211,18 @@ export async function addQuestion(content, conversationId) {
   }
 }
 
+/**
+ * Adds a new answer to the database.
+ * @async
+ * @param {string} content - The content of the answer
+ * @param {Array} filesUsedAsContext - Array of files used as context
+ * @param {string|number} questionId - The ID of the related question
+ * @param {string|number} conversationId - The ID of the conversation
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Inserted answer data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function addAnswer(
   content,
   filesUsedAsContext,
@@ -172,6 +251,15 @@ export async function addAnswer(
   }
 }
 
+/**
+ * Deletes a specific question from the database.
+ * @async
+ * @param {string|number} questionId - The ID of the question to delete
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Deleted question data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function deleteQuestion(questionId) {
   try {
     // Delete the question from the "questions" table
@@ -203,6 +291,14 @@ export async function deleteQuestion(questionId) {
   }
 }
 
+/**
+ * Retrieves all conversations from the database.
+ * @async
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Array|null} .data - Array of conversation objects if found
+ * @returns {string|null} .error - Error message if any
+ */
 export async function getConversations() {
   try {
     // Perform the query
@@ -231,6 +327,15 @@ export async function getConversations() {
   }
 }
 
+/**
+ * Creates a new conversation in the database.
+ * @async
+ * @param {string} title - The title of the conversation
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Inserted conversation data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function addConversation(title) {
   try {
     // Insert the conversation into the "conversations" table
@@ -254,6 +359,16 @@ export async function addConversation(title) {
   }
 }
 
+/**
+ * Updates the title of an existing conversation.
+ * @async
+ * @param {string|number} conversationId - The ID of the conversation
+ * @param {string} newTitle - The new title for the conversation
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Updated conversation data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function storeNewConversationTitle(conversationId, newTitle) {
   try {
     // Update the title in the "conversations" table where the ID matches
@@ -277,6 +392,15 @@ export async function storeNewConversationTitle(conversationId, newTitle) {
   }
 }
 
+/**
+ * Deletes a specific conversation from the database.
+ * @async
+ * @param {string|number} conversationId - The ID of the conversation to delete
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Deleted conversation data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function deleteConversationById(conversationId) {
   try {
     // Delete the conversation itself
@@ -393,10 +517,22 @@ export async function addDocumentToSupabase(document) {
 }
 
 /**
- * Store chunks and metadata in Supabase using parallel batch inserts.
- * @param {Array} chunks - Array of text chunks to store.
- * @param {number} batchSize - The maximum number of chunks to insert per batch.
- * @returns {object} - Object containing success status and details.
+ * Stores document chunks in Supabase database in batches.
+ *
+ * @async
+ * @param {Array<Object>} chunks - Array of chunk objects to store
+ * @param {string} chunks[].content - Content of the chunk
+ * @param {string} chunks[].id - Pinecone ID of the chunk
+ * @param {string} chunks[].documentId - Document ID the chunk belongs to
+ * @param {number} [batchSize=10] - Number of chunks to insert per batch
+ *
+ * @returns {Promise<Object>} Result object
+ * @returns {boolean} result.success - Whether the operation was successful
+ * @returns {string} result.message - Status message
+ * @returns {Array<Error>} [result.errors] - Array of errors if any batches failed
+ * @returns {string} [result.error] - Error message if an unexpected error occurred
+ *
+ * @throws {Error} When a batch insertion fails
  */
 export async function storeChunksInSupabase(chunks, batchSize = 10) {
   try {
@@ -473,6 +609,14 @@ export async function getChunkByDocumentId(pineconeId) {
   }
 }
 
+/**
+ * Retrieves all documents from the database.
+ * @async
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Array|null} .data - Array of document objects if found
+ * @returns {string|null} .error - Error message if any
+ */
 export async function getDocuments() {
   try {
     const { data, error } = await supabase.from("documents").select("*");
@@ -489,6 +633,14 @@ export async function getDocuments() {
   }
 }
 
+/**
+ * Retrieves all documents selected for RAG (Retrieval-Augmented Generation).
+ * @async
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Array|null} .data - Array of selected document objects if found
+ * @returns {string|null} .error - Error message if any
+ */
 export async function getAllRAGSelectedDocuments() {
   try {
     const { data, error } = await supabase
@@ -508,6 +660,15 @@ export async function getAllRAGSelectedDocuments() {
   }
 }
 
+/**
+ * Deletes multiple documents by their IDs.
+ * @async
+ * @param {Array<string|number>} documentIds - Array of document IDs to delete
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Deleted documents data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function deleteDocumentsByIds(documentIds) {
   try {
     // Delete the documents from the "documents" table
@@ -539,6 +700,15 @@ export async function deleteDocumentsByIds(documentIds) {
   }
 }
 
+/**
+ * Marks specified documents as selected for RAG.
+ * @async
+ * @param {Array<string|number>} documentIds - Array of document IDs to select
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Updated documents data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function selectDocumentsForRAG(documentIds) {
   try {
     // Update the isSelectedForRAG property to true for the specified document IDs
@@ -562,6 +732,15 @@ export async function selectDocumentsForRAG(documentIds) {
   }
 }
 
+/**
+ * Unmarks specified documents as selected for RAG.
+ * @async
+ * @param {Array<string|number>} documentIds - Array of document IDs to unselect
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Updated documents data if successful
+ * @returns {string|null} .error - Error message if any
+ */
 export async function unselectDocumentsForRAG(documentIds) {
   try {
     // Update the isSelectedForRAG property to false for the specified document IDs

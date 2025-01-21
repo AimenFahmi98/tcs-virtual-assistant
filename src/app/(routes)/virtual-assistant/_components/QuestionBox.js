@@ -9,11 +9,10 @@ import { LuAudioLines } from "react-icons/lu";
 function QuestionBox() {
   const textAreaRef = useRef();
   const formRef = useRef();
-  const [isLoading, setIsLoading] = useState(false);
   const context = useChatContext();
 
   async function handleSubmitQuestion(e) {
-    setIsLoading(true);
+    context.setIsGeneratingAnswer(true);
     e.preventDefault();
 
     const question = e.target.elements.question.value.trim();
@@ -21,7 +20,7 @@ function QuestionBox() {
     adjustTextAreaHeight();
 
     if (!question) {
-      setIsLoading(false);
+      context.setIsGeneratingAnswer(false);
       return;
     }
 
@@ -85,7 +84,7 @@ function QuestionBox() {
     } catch (error) {
       console.error("Error fetching OpenAI response:", error);
     } finally {
-      setIsLoading(false);
+      context.setIsGeneratingAnswer(false);
     }
   }
 
@@ -130,11 +129,11 @@ function QuestionBox() {
           ref={textAreaRef}
         />
         <button
-          disabled={isLoading}
+          disabled={context.isGeneratingAnswer}
           type="submit"
           className="hover:text-gray-600"
         >
-          {isLoading ? (
+          {context.isGeneratingAnswer ? (
             <Spinner />
           ) : (
             <BsArrowUpCircleFill className="h-9 w-9" />

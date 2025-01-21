@@ -1,5 +1,22 @@
 import { Pinecone } from "@pinecone-database/pinecone";
 import { getChunkByDocumentId } from "./supabase";
+/**
+ * Controller class for managing Pinecone vector database operations.
+ * Handles initialization, storage, and querying of embeddings in namespaced collections.
+ *
+ * @class PineconeController
+ * @classdesc Manages interactions with Pinecone vector database including storing and querying embeddings
+ * across different namespaces. Provides methods for checking namespace existence, storing embeddings,
+ * and performing similarity searches.
+ *
+ * @property {Pinecone} pc - Pinecone client instance
+ * @property {string} INDEX_NAME - Name of the Pinecone index to use
+ *
+ * @example
+ * const controller = new PineconeController();
+ * await controller.storeEmbeddings(embeddings, "my-namespace");
+ * const results = await controller.queryForEmbedding(["my-namespace"], queryEmbedding);
+ */
 class PineconeController {
   constructor() {
     this.pc = new Pinecone({
@@ -61,6 +78,13 @@ class PineconeController {
     }
   }
 
+  /**
+   * Queries multiple namespaces for similar vectors and retrieves corresponding text chunks
+   * @param {string[]} namespaces - Array of namespace names to search in
+   * @param {number[]} embedding - Vector embedding to search for similar matches
+   * @param {number} [topK=5] - Number of top results to return per namespace
+   * @returns {Promise<Array<{fromFile: string, textChunk: string}>>} Array of objects containing matched text chunks and their source files
+   */
   async queryForEmbedding(namespaces, embedding, topK = 5) {
     const index = this.getIndex();
     let results = [];

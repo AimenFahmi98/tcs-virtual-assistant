@@ -25,6 +25,7 @@ export function ChatContextProvider({ children }) {
   const [answers, setAnswers] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGeneratingAnswer, setIsGeneratingAnswer] = useState(false);
   const [isFetchingForConversations, setIsFetchingForConversations] =
     useState(true);
   const [isConversationsFetched, setIsConversationsFetched] = useState(false);
@@ -264,6 +265,8 @@ export function ChatContextProvider({ children }) {
     setIntentionToDeleteQuestion,
     hasQuestions,
     isLoading,
+    isGeneratingAnswer,
+    setIsGeneratingAnswer,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

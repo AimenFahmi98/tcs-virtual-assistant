@@ -1,3 +1,24 @@
+/**
+ * Controller class for handling OpenAI API interactions and conversation management.
+ * @class
+ * @classdesc Manages conversations with OpenAI, including history tracking, context retrieval, and embedding generation.
+ *
+ * @param {number} [MAX_HISTORY_LENGTH=50000] - Maximum length of conversation history in tokens
+ * @param {number} [MAX_COMPLETION_TOKENS=5000] - Maximum tokens for completion responses
+ *
+ * @property {PineconeController} pinecone - Instance of PineconeController for vector database operations
+ * @property {OpenAI} openai - OpenAI API client instance
+ * @property {Array<Object>} history - Conversation history array
+ * @property {number} MAX_HISTORY_LENGTH - Maximum allowed history length
+ * @property {number} MAX_COMPLETION_TOKENS - Maximum allowed completion tokens
+ * @property {string} model - OpenAI model identifier
+ * @property {Array<string>} filesUsedInLastRequest - Tracks files used in the most recent request
+ * @property {Array<Object>} tools - Available function tools for the AI
+ *
+ * @example
+ * const openaiController = new OpenaiController();
+ * await openaiController.answer("What is TCS?", ["document1.pdf", "document2.pdf"]);
+ */
 import OpenAI from "openai";
 import { encode } from "gpt-tokenizer";
 import PineconeController from "./pinecone";
@@ -57,6 +78,12 @@ class OpenaiController {
   }
 
   // Function to filter and print user questions and assistant answers
+  /**
+   * Prints the filtered conversation history to the console.
+   * Only displays messages from 'user' and 'assistant' roles.
+   * Each message is printed with a numerical index, role identifier, and content.
+   * @returns {void}
+   */
   printFilteredHistory() {
     console.log("Filtered History:");
     this.history
@@ -72,6 +99,16 @@ class OpenaiController {
       });
   }
 
+  /**
+   * Loads the conversation history for a specific conversation by fetching questions and answers from the database.
+   * Maps the questions and answers into the history array in the correct sequence, maintaining the conversation flow.
+   * Questions are mapped as "user" role and answers as "assistant" role.
+   *
+   * @async
+   * @param {string|number} conversationId - The unique identifier for the conversation to load
+   * @throws {Error} When there's an error fetching data from the database
+   * @returns {Promise<void>}
+   */
   async loadConversationHistory(conversationId) {
     try {
       const questionsResult = await getQuestions(conversationId);
@@ -104,14 +141,21 @@ class OpenaiController {
     } catch (error) {
       console.error("Error loading conversation history:", error);
     }
-
-    // this.printFullHistory();
   }
 
   printFullHistory() {
     console.log("Full History:", this.history);
   }
 
+  /**
+   * Adds the assistant's answer to the conversation history and manages system messages.
+   * This method ensures that only one system message (the first one) is retained while
+   * maintaining the chronological order of other messages. In other words, it removes RAG file context from the history of messages as the last answer of the assistant is usually a summary of the context anyway. Therefore, a lot less tokens are used.
+   *
+   * @param {string} assistantAnswer - The response from the assistant to be added to history
+   * @throws {Error} Throws an error if assistantAnswer is null, undefined, or not a string
+   * @returns {void}
+   */
   pushAnswerToHistory(assistantAnswer) {
     if (!assistantAnswer || typeof assistantAnswer !== "string") {
       throw new Error("Invalid assistant answer provided.");
@@ -149,6 +193,19 @@ class OpenaiController {
     return this.filesUsedInLastRequest;
   }
 
+  /**
+   * Generates a concise title for the conversation based on the message history.
+   * This method processes the conversation history and uses OpenAI to create a brief,
+   * relevant title of maximum 5 words.
+   *
+   * @async
+   * @returns {Promise<string>} A promise that resolves to the generated title string.
+   * @throws {Error} If title generation fails or if OpenAI API returns no content.
+   *
+   * @example
+   * const title = await conversation.generateTitle();
+   * // Returns: "Weather Forecast Discussion with User"
+   */
   async generateTitle() {
     // Filter the conversation history to include only user and assistant messages
     const filteredHistory = this.history.filter(
@@ -196,6 +253,13 @@ class OpenaiController {
     }
   }
 
+  /**
+   * Calculates the total length of encoded message content in the conversation history.
+   * This method processes each message in the history array and sums up the length
+   * of their encoded content using the 'encode' function.
+   *
+   * @returns {number} The total length of all encoded messages in the history.
+   */
   getHistoryLength() {
     let length = 0;
     this.history.forEach((message) => {
@@ -209,6 +273,18 @@ class OpenaiController {
     this.deleteExcessMsgs();
   }
 
+  /**
+   * Removes messages from the conversation history when it exceeds the maximum allowed length.
+   * Messages are deleted in the following priority order:
+   * 1. RAG (Retrieval-Augmented Generation) context messages
+   * 2. Assistant (chatbot) responses
+   * 3. User messages (starting from index 2)
+   *
+   * The method continues removing messages until the history length is within
+   * the MAX_HISTORY_LENGTH limit.
+   *
+   * @returns {void}
+   */
   deleteExcessMsgs() {
     let historyLength = this.getHistoryLength();
     while (historyLength > this.MAX_HISTORY_LENGTH) {
@@ -241,6 +317,16 @@ class OpenaiController {
     }
   }
 
+  /**
+   * Retrieves additional context by embedding a refined question and querying related documents
+   * @async
+   * @param {string} refinedQuestion - The refined question to get context for
+   * @param {Array} RAGDocuments - Array of RAG documents to search through
+   * @returns {Promise<Object>} Object containing:
+   *   - filesUsed {string[]} Array of filenames used for context
+   *   - context {string[]} Array of text chunks with file source information
+   * @throws {Error} If embedding creation or Pinecone query fails
+   */
   async getAdditionalContext(refinedQuestion, RAGDocuments) {
     console.log("Refined question:", refinedQuestion);
 
@@ -269,6 +355,25 @@ class OpenaiController {
     return { filesUsed, context };
   }
 
+  /**
+   * Processes a user question and generates an answer using OpenAI's API with optional RAG documents
+   * @async
+   * @param {string} question - The user's question to be answered
+   * @param {Object[]} RAGDocuments - Array of RAG documents for additional context
+   * @returns {Promise<StreamCompletion>} A stream of the AI's response
+   * @throws {Error} May throw errors from OpenAI API calls
+   * @description
+   * This method:
+   * 1. Adds the question to conversation history
+   * 2. Makes initial API call that may trigger tool calls
+   * 3. If tool calls are triggered, refines the question and gets additional context
+   * 4. Tracks files used in the request
+   * 5. Returns a streamed completion from OpenAI
+   *
+   * The method implements a tool call loop limited to one iteration by default (configurable).,
+   * where it can refine the question and gather additional context before
+   * generating the final answer.
+   */
   async answer(question, RAGDocuments) {
     // Add the user's question to the history
     this.history.push({
@@ -334,9 +439,12 @@ class OpenaiController {
   }
 
   /**
-   * Generate embeddings for an array of text chunks using OpenAI.
-   * @param {Array<string>} chunks - Array of text chunks to generate embeddings for.
-   * @returns {Promise<Array>} - Array of objects containing text chunks and their embeddings.
+   * Generates embeddings for text chunks using OpenAI's embedding model.
+   * @param {string[]} chunks - Array of text chunks to generate embeddings for
+   * @param {string} fileName - Name of the file being processed
+   * @returns {Promise<Array<{id: string, chunk: string, vector: number[]}>>} Array of objects containing chunk ID, text content and embedding vector
+   * @throws {Error} If chunks array is empty or undefined
+   * @throws {Error} If OpenAI API call fails
    */
   async generateOpenAIEmbeddings(chunks, fileName) {
     try {

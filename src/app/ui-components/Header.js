@@ -9,7 +9,7 @@ function Header() {
       <div className="grid h-full grid-cols-3 items-center justify-evenly">
         <div className="mr-24 flex items-center justify-center gap-3">
           <MenuLink
-            href={"ai-assistant"}
+            href={"virtual-assistant"}
             title={"AI Assistant"}
             icon={<BiSolidConversation className="h-4 w-4" />}
           />
