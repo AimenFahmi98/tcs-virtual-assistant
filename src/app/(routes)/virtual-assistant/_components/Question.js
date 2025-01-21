@@ -1,10 +1,10 @@
 "use client";
 
-import { useChatContext } from "@/context/chatContext";
+import { useChat } from "@/context/chatContext";
 import { HiOutlineTrash } from "react-icons/hi2";
 
 function Question({ children, handleDelete, questionId }) {
-  const context = useChatContext();
+  const context = useChat();
 
   return (
     <div

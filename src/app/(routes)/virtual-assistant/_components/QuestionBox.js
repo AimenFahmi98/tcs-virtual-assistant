@@ -3,13 +3,13 @@
 import { useRef, useState } from "react";
 import { BsArrowUpCircleFill } from "react-icons/bs";
 import Spinner from "@/app/ui-components/Spinner";
-import { useChatContext } from "@/context/chatContext";
+import { useChat } from "@/context/chatContext";
 import { LuAudioLines } from "react-icons/lu";
 
 function QuestionBox() {
   const textAreaRef = useRef();
   const formRef = useRef();
-  const context = useChatContext();
+  const context = useChat();
 
   async function handleSubmitQuestion(e) {
     context.setIsGeneratingAnswer(true);

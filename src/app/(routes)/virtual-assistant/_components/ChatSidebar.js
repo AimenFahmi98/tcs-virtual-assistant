@@ -2,12 +2,12 @@
 
 import { LuSearch } from "react-icons/lu";
 import { TbEdit } from "react-icons/tb";
-import { useChatContext } from "@/context/chatContext";
+import { useChat } from "@/context/chatContext";
 import ConversationHistory from "./ConversationHistory";
 import Sidebar from "@/app/ui-components/Sidebar";
 
 function ChatSidebar() {
-  const context = useChatContext();
+  const context = useChat();
 
   return (
     <Sidebar className={"relative row-span-full gap-8"}>

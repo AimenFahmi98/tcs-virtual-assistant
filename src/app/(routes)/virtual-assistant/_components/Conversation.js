@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { TbTrash } from "react-icons/tb";
 import { BiEdit } from "react-icons/bi";
-import { useChatContext } from "@/context/chatContext";
+import { useChat } from "@/context/chatContext";
 import SlidingExtensionMenu from "@/app/ui-components/SlidingExtensionMenu";
 
 function Conversation({ title, isActive, setActive, conversationId }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
-  const context = useChatContext();
+  const context = useChat();
 
   return (
     <div

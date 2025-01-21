@@ -1,11 +1,11 @@
 "use client";
 
-import { useChatContext } from "@/context/chatContext";
+import { useChat } from "@/context/chatContext";
 import Conversation from "./Conversation";
 import Loading from "@/app/(routes)/virtual-assistant/loading";
 
 function ConversationHistory() {
-  const context = useChatContext();
+  const context = useChat();
 
   return (
     <div className="flex max-h-[70%] min-h-[70%] w-full flex-col items-start justify-start gap-4 overflow-visible px-4">

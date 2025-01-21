@@ -1,6 +1,6 @@
 import HtmlBox from "../../../ui-components/HtmlBox";
 import Image from "next/image";
-import { useChatContext } from "@/context/chatContext";
+import { useChat } from "@/context/chatContext";
 import SourceTag from "./SourceTag";
 
 function calculateFileStatistics(fileArray) {
@@ -30,7 +30,7 @@ function calculateFileStatistics(fileArray) {
 
 function Answer({ answer, filesUsedAsContext }) {
   let isRAGUsed = filesUsedAsContext && filesUsedAsContext.length !== 0;
-  const context = useChatContext();
+  const context = useChat();
 
   return (
     <div

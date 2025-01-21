@@ -3,10 +3,10 @@
 import Question from "./Question";
 import Answer from "./Answer";
 import Spinner from "@/app/ui-components/Spinner";
-import { useChatContext } from "@/context/chatContext";
+import { useChat } from "@/context/chatContext";
 
 function MessagesBox() {
-  const context = useChatContext();
+  const context = useChat();
 
   return !context.isLoading ? (
     <div className="flex h-[730px] w-full flex-col items-center justify-start overflow-y-scroll text-sm">
