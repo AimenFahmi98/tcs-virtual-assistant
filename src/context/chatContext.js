@@ -13,6 +13,7 @@ import {
   getAllRAGSelectedDocuments,
 } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
+import { createClient } from "@/utils/supabase/client";
 
 // Create the Context
 const ChatContext = createContext();
@@ -67,6 +68,7 @@ export function ChatContextProvider({ children }) {
     questionId: -1,
   });
   const [hasQuestions, setHasQuestions] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     /**
@@ -86,7 +88,12 @@ export function ChatContextProvider({ children }) {
      */
     async function fetchConversations() {
       setIsFetchingForConversations(true);
-      const conversationsResult = await getConversations();
+      const response = await fetch("/api/conversations");
+      const data = await response.json();
+      const conversationsResult = {
+        success: true,
+        data: data,
+      };
       if (conversationsResult.success && conversationsResult.data.length > 0) {
         setActiveConversationId(conversationsResult.data[0].id);
         setConversations(
@@ -288,15 +295,38 @@ export function ChatContextProvider({ children }) {
   async function createNewEmptyConversation() {
     const title = "New conversation";
 
-    const { success, data } = await addConversation(title);
+    const supabase = createClient();
 
-    const newEmptyConversation = { title, id: data[0].id };
+    const userResponse = await supabase.auth.getUser();
+
+    if (!userResponse.data?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    const response = await fetch("/api/conversations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: title,
+        user_id: userResponse.data.user.id,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.error) {
+      throw new Error(response.error);
+    }
+
+    const newEmptyConversation = { title, id: data.id };
     setConversations((conversations) => [
       ...conversations,
       newEmptyConversation,
     ]);
 
-    setActiveConversationId(data[0].id);
+    setActiveConversationId(data.id);
 
     return newEmptyConversation;
   }
@@ -319,13 +349,17 @@ export function ChatContextProvider({ children }) {
     );
 
     try {
-      // Update the title in the database
-      const { success, error } = await storeNewConversationTitle(
-        conversationId,
-        newTitle,
-      );
-      if (!success) {
-        throw new Error(`Failed to update the conversation title: ${error}`);
+      const response = await fetch("/api/conversations", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ conversationId, newTitle }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update conversation title");
       }
     } catch (error) {
       console.error("Error updating conversation title:", error);
@@ -355,10 +389,17 @@ export function ChatContextProvider({ children }) {
     }
 
     try {
-      // Call the deleteConversation function from the Supabase API
-      const { success, error } = await deleteConversationById(conversationId);
-      if (!success) {
-        throw new Error(`Failed to delete the conversation: ${error}`);
+      const response = await fetch("/api/conversations", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ conversationId }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete conversation");
       }
     } catch (error) {
       console.error("Error deleting conversation:", error);

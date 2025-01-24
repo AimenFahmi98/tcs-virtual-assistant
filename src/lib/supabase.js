@@ -25,7 +25,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = "https://ssiznirqzcgkeuzesfad.supabase.co";
-const supabaseKey = process.env.SERVICE_KEY;
+const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
@@ -336,12 +336,12 @@ export async function getConversations() {
  * @returns {Object|null} .data - Inserted conversation data if successful
  * @returns {string|null} .error - Error message if any
  */
-export async function addConversation(title) {
+export async function addConversation(title, user_id) {
   try {
-    // Insert the conversation into the "conversations" table
+    // Insert the conversation into the "conversations" table with user_id
     const { data, error } = await supabase
       .from("conversations")
-      .insert([{ title }])
+      .insert([{ title, user_id }])
       .select();
 
     // Handle potential errors from Supabase
@@ -761,5 +761,181 @@ export async function unselectDocumentsForRAG(documentIds) {
     // Handle unexpected errors
     console.error("Unexpected error while updating documents:", err);
     return { success: false, error: err.message };
+  }
+}
+
+/* Managing Users */
+
+/**
+ * Handles user sign-in using Supabase authentication.
+ *
+ * @async
+ * @param {string} email - The email address of the user.
+ * @param {string} password - The password for the user account.
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the sign-in was successful
+ * @returns {Object|null} .data - User session data if successful
+ * @returns {string|null} .error - Error message if any
+ */
+export async function logIn(email, password) {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("Error during sign in:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Unexpected error during sign in:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Handles user registration using Supabase authentication.
+ *
+ * @async
+ * @param {string} email - The email address of the user.
+ * @param {string} password - The password for the user account.
+ * @returns {Promise<Object>} An object containing the result of the signup operation
+ * @returns {boolean} .success - Indicates if the signup was successful
+ * @returns {string} [.error] - Error message if signup failed
+ * @returns {string} [.userId] - The ID of the created user if signup succeeded
+ * @throws {Error} If there's an unexpected error during the signup process
+ */
+export async function signUp(email, password) {
+  try {
+    // Check if email already exists
+    const { data: existingUser } = await supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (existingUser) {
+      return { success: false, error: "Email already exists" };
+    }
+
+    const { data, error } = await supabase.auth.signUp({ email, password });
+
+    if (error) {
+      console.error("Error during signup:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Unexpected error during signup:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Creates a user profile in the database.
+ * @async
+ * @param {string} userId - The user's ID
+ * @param {string} fullName - The user's full name
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Created profile data if successful
+ * @returns {string|null} .error - Error message if any
+ */
+export async function createUserProfile(id, email, fullName) {
+  try {
+    const { data, error } = await supabase
+      .from("user_profiles")
+      .insert([{ id, email, fullName }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating user profile:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
+  } catch (err) {
+    console.error("Unexpected error creating user profile:", err);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
+ * Gets the current session.
+ * @async
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Object|null} .data - Session data if found
+ * @returns {string|null} .error - Error message if any
+ */
+export async function getCurrentSession() {
+  try {
+    const response = await supabase.auth.getSession();
+
+    console.log("From getCurrentSession():", response);
+
+    if (response.error) {
+      console.error("Error getting session:", response.error.message);
+      return { success: false, error: response.error.message };
+    }
+
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error("Error getting session:", error.message);
+    return { success: false, error: error.message };
+  }
+}
+export async function getCurrentUser() {
+  try {
+    // First check if we have a session
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      console.error("Session error:", sessionError);
+      return null;
+    }
+
+    if (!session) {
+      console.log("No active session found");
+      return null;
+    }
+
+    // Then get user data
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+      console.error("User error:", userError);
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return null;
+  }
+}
+
+export async function signOut() {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Sign out error:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Sign out error:", error);
+    return { success: false, error: error.message };
   }
 }

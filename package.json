@@ -12,6 +12,7 @@
     "@huggingface/transformers": "^3.2.4",
     "@langchain/community": "^0.3.20",
     "@pinecone-database/pinecone": "^4.0.0",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "date-fn": "^0.0.2",
     "date-fns": "^4.1.0",

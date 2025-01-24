@@ -9,14 +9,14 @@ import Link from "next/link";
  * @param {string} props.href - The URL that the link should navigate to
  * @returns {JSX.Element} A Next.js Link component styled as a menu item
  */
-function MenuLink({ title, icon, href }) {
+function MenuLink({ title, icon, href, className }) {
   return (
     <Link
       href={href}
-      className="flex items-center justify-center gap-2 rounded-full border border-primary_darker px-4 py-2 text-sm hover:bg-primary_light"
+      className={`${className} flex items-center justify-center gap-2 rounded-full border border-primary_darker px-4 py-2 text-sm hover:bg-primary_light`}
     >
       {icon}
-      <span className="max-w-24 truncate">{title}</span>
+      <span className="max-w-60 truncate text-nowrap">{title}</span>
     </Link>
   );
 }
