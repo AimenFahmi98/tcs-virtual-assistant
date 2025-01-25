@@ -12,7 +12,7 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (formData) => {
+  async function handleSubmit(formData) {
     try {
       setIsLoading(true);
       const email = formData.get("email");
@@ -23,23 +23,22 @@ export default function LoginForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        redirect: "follow", // Add this to follow redirects
       });
 
-      // Check if response is ok before parsing
-      if (!response.ok) {
-        const data = await response.json();
-        const errorMessage =
-          data.message === "Invalid login credentials"
-            ? "Incorrect email and/or password. Try again"
-            : data.message;
-        toast.error(`${errorMessage}`, {
-          position: "top-center",
-        });
+      if (response.redirected) {
+        window.location.href = response.url;
         return;
       }
 
-      // Redirect using router.push
-      router.push("/");
+      const data = await response.json();
+      const errorMessage =
+        data.message === "Invalid login credentials"
+          ? "Incorrect email and/or password. Try again"
+          : data.message;
+      toast.error(`${errorMessage}`, {
+        position: "top-center",
+      });
     } catch (error) {
       console.error("Unexpected error:", error);
       console.trace(error);
@@ -49,7 +48,42 @@ export default function LoginForm() {
     } finally {
       setIsLoading(false);
     }
-  };
+
+    // try {
+    //   setIsLoading(true);
+    //   const email = formData.get("email");
+    //   const password = formData.get("password");
+    //   const response = await fetch("/api/auth/login", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({ email, password }),
+    //   });
+
+    //   if (!response.ok) {
+    //     const data = await response.json();
+    //     const errorMessage =
+    //       data.message === "Invalid login credentials"
+    //         ? "Incorrect email and/or password. Try again"
+    //         : data.message;
+    //     toast.error(`${errorMessage}`, {
+    //       position: "top-center",
+    //     });
+    //     return;
+    //   }
+
+    //   window.location.href = "/virtual-assistant";
+    // } catch (error) {
+    //   console.error("Unexpected error:", error);
+    //   console.trace(error);
+    //   toast.error(`Unexpected error: ${error}`, {
+    //     position: "top-center",
+    //   });
+    // } finally {
+    //   setIsLoading(false);
+    // }
+  }
 
   return (
     <>
@@ -136,7 +170,7 @@ export default function LoginForm() {
                 className="w-full transform rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:text-base"
               >
                 {isLoading ? (
-                  <Spinner color="white" borderSize="3px" />
+                  <Spinner color="white" borderSize="3px" size="24px" />
                 ) : (
                   "Sign In"
                 )}

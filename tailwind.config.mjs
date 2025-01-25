@@ -16,6 +16,7 @@ export default {
         primary_dark: "var(--color-primary-dark)",
         primary_darker: "var(--color-primary-darker)",
         secondary: "var(--color-secondary)",
+        secondary_light: "var(--color-secondary-light)",
         background: "var(--color-background)",
         background_accent_secondary: "var(--color-background-accent-secondary)",
         accent: "var(--color-accent)",
@@ -39,12 +40,13 @@ export default {
           "--color-primary-light": "#f9fafb",
           "--color-primary-dark": "#e5e7eb",
           "--color-primary-darker": "#d1d5db",
-          "--color-secondary": "#e9e9e9",
           "--color-background": "#ffffff",
           "--color-background-accent-secondary": "#eff6ff",
           "--color-accent": "#ffe4e48f",
           "--color-accent-light": "#ffe4e455",
           "--color-accent-secondary": "#2563eb",
+          "--color-secondary": "#009688",
+          "--color-secondary-light": "#0096888a",
           "--color-text": "#555",
           "--color-text-light": "rgb(115 121 133)",
         },
@@ -53,12 +55,13 @@ export default {
           "--color-primary-light": "#2f2f2fb5", // Lighter variation
           "--color-primary-dark": "#323232d9", // Even darker
           "--color-primary-darker": "#323232d9",
-          "--color-secondary": "#374151", // Secondary shade
           "--color-background": "#212121", // Dark background
           "--color-background-accent-secondary": "#2e2e2e",
           "--color-accent": "#44403c",
           "--color-accent-light": "#ffe4e455",
           "--color-accent-secondary": "#fcd34d",
+          "--color-secondary": "#009688",
+          "--color-secondary-light": "#009688",
           "--color-text": "#ececec", // Light text
           "--color-text-light": "rgb(156 163 175)", // Muted light text
         },
@@ -67,12 +70,13 @@ export default {
           "--color-primary-light": "#eafbea", // Lighter green with a fresh feel
           "--color-primary-dark": "#93c48b", // Slightly darker mint green
           "--color-primary-darker": "#76a374", // Deepened green for contrast
-          "--color-secondary": "#fff4d6", // Gentle pastel yellow-orange
           "--color-background": "#fffaf0", // Very light cream-yellow background
           "--color-background-accent-secondary": "#eff6ff",
           "--color-accent": "#fcdba2", // Muted peachy yellow for accents
           "--color-accent-light": "#fef2d8", // Softer pale yellow for lighter accents
           "--color-accent-secondary": "#2563eb",
+          "--color-secondary": "#009688",
+          "--color-secondary-light": "#009688",
           "--color-text": "#3a5045", // Darker forest green for text
           "--color-text-light": "rgb(102 120 111)", // Muted gray-green for lighter text
         },

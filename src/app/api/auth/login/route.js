@@ -25,10 +25,7 @@ export async function POST(request) {
       );
     }
 
-    return NextResponse.json(
-      { success: true, data: response.data },
-      { status: 200 },
-    );
+    return NextResponse.redirect(new URL("/virtual-assistant", request.url));
   } catch (err) {
     return NextResponse.json(
       { success: false, message: "Something went wrong." },

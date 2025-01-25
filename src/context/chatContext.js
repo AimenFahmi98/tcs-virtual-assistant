@@ -134,21 +134,31 @@ export function ChatContextProvider({ children }) {
       setIsLoading(true);
       setIsFetchingForQuestions(true);
 
-      const questionsResult = await getQuestions(activeConversationId);
+      const questionsResponse = await fetch(
+        `/api/questions?conversationId=${activeConversationId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      const questionsData = await questionsResponse.json();
+
       const answersResult = await getAnswers(activeConversationId);
       const documentsResult =
         await getAllRAGSelectedDocuments(activeConversationId);
 
       if (
-        questionsResult.success &&
+        questionsResponse.ok &&
         answersResult.success &&
         documentsResult.success
       ) {
-        questionsResult.data.length !== 0
+        questionsData.length !== 0
           ? setHasQuestions(true)
           : setHasQuestions(false);
         setQuestions(
-          questionsResult.data.map((question) => {
+          questionsData.map((question) => {
             return {
               content: question.content,
               id: question.id,
@@ -200,13 +210,31 @@ export function ChatContextProvider({ children }) {
    * @async
    */
   async function storeQuestion(question) {
-    // Add the question to the database
-    const { success, data } = await addQuestion(question, activeConversationId);
-    if (!success || !data || data.length === 0) {
+    const supabase = createClient();
+    const userResponse = await supabase.auth.getUser();
+
+    if (!userResponse.data?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    const response = await fetch("/api/questions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: question,
+        conversationId: activeConversationId,
+        userId: userResponse.data.user.id,
+      }),
+    });
+
+    if (!response.ok) {
       throw new Error("Failed to add the question to the database.");
     }
 
-    const questionId = data[0].id;
+    const data = await response.json();
+    const questionId = data.id;
 
     setQuestions((questions) => [
       ...questions,
@@ -224,6 +252,13 @@ export function ChatContextProvider({ children }) {
    * @returns {Promise<void>}
    */
   async function removeQuestionAndAssociatedAnswer(questionId) {
+    const supabase = createClient();
+    const userResponse = await supabase.auth.getUser();
+
+    if (!userResponse.data?.user) {
+      throw new Error("User not authenticated");
+    }
+
     setQuestions((questions) =>
       questions.filter((question) => question.id !== questionId),
     );
@@ -232,12 +267,23 @@ export function ChatContextProvider({ children }) {
     );
 
     try {
-      const { success, error } = await deleteQuestion(questionId);
-      if (!success) {
-        throw new Error(error);
+      const response = await fetch("/api/questions", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          questionId: questionId,
+          userId: userResponse.data.user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete question");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error deleting question:", error);
     }
   }
 
