@@ -15,14 +15,9 @@ function Layout({ children }) {
             title={"Account"}
           >
             <SubSettingsItem
-              title={"Appearance"}
-              href={"/settings/appearance"}
+              title={"Account Information"}
+              href={"/profile/account-info"}
               icon={<PiPaintBrush />}
-            />
-            <SubSettingsItem
-              title={"Profile"}
-              href={"/settings/profile"}
-              icon={<VscAccount />}
             />
           </SettingsItem>
         </SettingsNav>

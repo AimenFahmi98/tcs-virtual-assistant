@@ -7,13 +7,13 @@ import { HiMiniDocument } from "react-icons/hi2";
 import { GrDocumentStore } from "react-icons/gr";
 import { IoDocumentsOutline } from "react-icons/io5";
 
-function ProfileMenu({ email }) {
+function ProfileMenu({ title }) {
   return (
     <DropDownMenu
       trigger={
         <div className="relative mx-auto flex items-center justify-center gap-2 rounded-full border-4 border-background bg-secondary px-4 py-2 text-sm text-background transition duration-300 hover:border-4 hover:border-primary_dark">
           <CgProfile className="h-5 w-5" />
-          <span>{email}</span>
+          <span>{title}</span>
         </div>
       }
     >

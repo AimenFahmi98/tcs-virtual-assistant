@@ -1,14 +1,7 @@
 "use client";
 
-import { BiSolidConversation } from "react-icons/bi";
-import { IoDocuments } from "react-icons/io5";
-import { HiCog } from "react-icons/hi2";
-import MenuLink from "./MenuLink";
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { CgProfile } from "react-icons/cg";
-import BtnSignOut from "./BtnSignOut";
-import DropDownMenu from "./DropDownMenu";
 import ProfileMenu from "./ProfileMenu";
 
 /**
@@ -24,25 +17,31 @@ function Header() {
   const [email, setEmail] = useState("");
 
   useEffect(() => {
-    async function fetchSession() {
-      const supabase = createClient();
-      const response = await supabase.auth.getUser();
+    const supabase = createClient();
 
-      if (!response.error) {
-        setEmail(response.data.user.email);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        setEmail(session.user.email);
         setIsAuthenticated(true);
       } else {
+        setEmail("");
         setIsAuthenticated(false);
       }
-    }
-    fetchSession();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
   return (
-    <div className="col-start-2 text-text">
-      <div className="flex items-center justify-end py-1 pr-4">
-        <ProfileMenu email={email} />
+    isAuthenticated && (
+      <div className="col-start-2 text-text">
+        <div className="flex items-center justify-end py-1 pr-4">
+          <ProfileMenu title={email} />
+        </div>
       </div>
-    </div>
+    )
   );
 }
 
