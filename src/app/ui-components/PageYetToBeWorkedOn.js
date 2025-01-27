@@ -14,20 +14,51 @@ import React from "react";
  */
 function PageYetToBeWorkedOn() {
   return (
-    <div className="flex h-full w-full items-center justify-center bg-gradient-to-r from-primary_light to-primary_darker">
-      <div className="rounded-xl bg-background bg-opacity-80 p-8 text-center shadow-lg">
-        <h1 className="mb-8 animate-pulse text-3xl font-[600] text-text">
-          🛠 Under Construction
-        </h1>
-        <p className="mb-4 text-lg text-text">
-          We are working hard to bring this page to life. Stay tuned!
-        </p>
-        <p className="mb-4 text-base text-text">
-          ⏳ Please be patient while we build something amazing for you.
-        </p>
-        <p className="text-base text-text">
-          💪 Thank you for your understanding and support!
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200 p-4">
+      <div className="w-full max-w-4xl rounded-xl bg-white p-8 shadow-xl md:p-12">
+        <div className="mb-8 border-l-4 border-blue-600 pl-6">
+          <h1 className="mb-2 text-3xl font-semibold text-gray-800 md:text-4xl">
+            Page under development
+          </h1>
+          <p className="text-lg text-gray-500">
+            This page is currently being worked on
+          </p>
+        </div>
+
+        <div className="space-y-8">
+          <div className="flex items-center space-x-4">
+            <div className="h-12 w-1 animate-pulse rounded-full bg-blue-600"></div>
+            <p className="text-xl font-light text-gray-700">
+              We&apos;re actively developing new features and optimizing
+              functionality 🚀✨
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-6">
+            <h2 className="mb-3 text-lg font-medium text-gray-700">
+              Expected Improvements
+            </h2>
+            <ul className="space-y-2 text-gray-600">
+              <li className="flex items-center">
+                <span className="mr-3 h-2 w-2 rounded-full bg-blue-600"></span>
+                Enhanced user interface and experience
+              </li>
+              <li className="flex items-center">
+                <span className="mr-3 h-2 w-2 rounded-full bg-blue-600"></span>
+                Improved system performance and reliability
+              </li>
+              <li className="flex items-center">
+                <span className="mr-3 h-2 w-2 rounded-full bg-blue-600"></span>
+                Additional features and capabilities
+              </li>
+            </ul>
+          </div>
+
+          <p className="border-t pt-6 text-sm text-gray-500">
+            We appreciate your patience during this enhancement period. For
+            immediate assistance, please contact system administration.
+          </p>
+        </div>
       </div>
     </div>
   );
