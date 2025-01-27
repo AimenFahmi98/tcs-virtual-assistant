@@ -58,7 +58,7 @@ export default function SignupForm() {
 
   return (
     <>
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 px-4">
+      <div className="flex min-h-screen items-center justify-center bg-orange-400 px-4">
         <div className="w-full max-w-lg space-y-6 rounded-lg bg-white p-8 shadow-lg sm:p-12">
           <h1 className="text-center text-2xl font-bold text-gray-800 sm:text-3xl">
             Create an Account
