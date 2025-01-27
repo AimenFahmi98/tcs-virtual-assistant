@@ -51,7 +51,7 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="flex h-screen items-start justify-center bg-slate-100 px-4 pt-32">
+    <div className="flex h-screen items-center justify-center bg-slate-100 px-4">
       <div className="w-[500px] space-y-6 rounded-3xl bg-background p-8 shadow-lg sm:px-12">
         <div className="mb-9 flex flex-col items-center justify-center gap-2">
           <div className="rounded-full bg-accent p-4">
