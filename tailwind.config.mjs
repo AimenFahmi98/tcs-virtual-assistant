@@ -10,6 +10,15 @@ export default {
   ],
   theme: {
     extend: {
+      keyframes: {
+        slideUp: {
+          "0%": { transform: "translateY(100%)", opacity: 0 },
+          "100%": { transform: "translateY(0)", opacity: 1 },
+        },
+      },
+      animation: {
+        "slide-up": "slideUp 0.5s ease-in-out",
+      },
       colors: {
         primary: "var(--color-primary)",
         primary_light: "var(--color-primary-light)",

@@ -54,7 +54,7 @@ export default function LoginForm() {
     <div className="flex h-screen items-center justify-center bg-slate-100 px-4">
       <div className="w-[500px] space-y-6 rounded-3xl bg-background p-8 shadow-lg sm:px-12">
         <div className="mb-9 flex flex-col items-center justify-center gap-2">
-          <div className="rounded-full bg-accent p-4">
+          <div className="mb-4 rounded-full p-4 shadow-md_custom">
             <Image
               src={"/tcs-logo-no-text.webp"}
               width={50}
