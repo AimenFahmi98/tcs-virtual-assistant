@@ -31,6 +31,7 @@ export default {
         accent: "var(--color-accent)",
         accent_light: "var(--color-accent-light)",
         accent_secondary: "var(--color-accent-secondary)",
+        accent_secondary_light: "var(--color-accent-secondary-light)",
         text: "var(--color-text)",
         text_light: "var(--color-text-light)",
       },
@@ -54,10 +55,11 @@ export default {
           "--color-accent": "#ffe4e48f",
           "--color-accent-light": "#ffe4e455",
           "--color-accent-secondary": "#2563eb",
-          "--color-secondary": "#009688",
-          "--color-secondary-light": "#0096888a",
+          "--color-accent-secondary-light": "#2563ebbb",
+          "--color-secondary": "#4CAF50",
+          "--color-secondary-light": "#4caf50db",
           "--color-text": "#555",
-          "--color-text-light": "rgb(115 121 133)",
+          "--color-text-light": "#9ca3af",
         },
         '[data-theme="dark"]': {
           "--color-primary": "#292929", // Darker base color

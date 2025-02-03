@@ -14,7 +14,17 @@ import { usePathname } from "next/navigation";
  */
 function SubSettingsItem({ title, href }) {
   const pathname = usePathname(); // Get the current pathname
-  const isSelected = pathname === `${href}`;
+  let isSelected = pathname === `${href}`;
+
+  // Deals with the case of having only one settings item for the two pages all-documents and rag-documents
+  if (
+    href ===
+      "/document-manager/document-management/my-documents/all-documents" &&
+    pathname ===
+      "/document-manager/document-management/my-documents/rag-documents"
+  ) {
+    isSelected = true;
+  }
 
   return (
     <Link

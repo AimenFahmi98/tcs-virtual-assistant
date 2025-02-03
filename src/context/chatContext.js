@@ -1,17 +1,6 @@
 "use client";
 
-import {
-  addAnswer,
-  addConversation,
-  addQuestion,
-  deleteConversationById,
-  deleteQuestion,
-  getAnswers,
-  getConversations,
-  getQuestions,
-  storeNewConversationTitle,
-  getAllRAGSelectedDocuments,
-} from "@/lib/supabase";
+import { getAnswers, getAllRAGSelectedDocuments } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -53,6 +42,7 @@ const ChatContext = createContext();
  * @property {function} setIsGeneratingAnswer - Updates answer generation loading state
  */
 export function ChatContextProvider({ children }) {
+  const [user, setUser] = useState(null); // Track the current user
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(1);
   const [questions, setQuestions] = useState([]);
@@ -62,145 +52,108 @@ export function ChatContextProvider({ children }) {
   const [isGeneratingAnswer, setIsGeneratingAnswer] = useState(false);
   const [isFetchingForConversations, setIsFetchingForConversations] =
     useState(true);
-  const [isConversationsFetched, setIsConversationsFetched] = useState(false);
   const [isFetchingForQuestions, setIsFetchingForQuestions] = useState(true);
   const [intentionToDeleteQuestion, setIntentionToDeleteQuestion] = useState({
     questionId: -1,
   });
   const [hasQuestions, setHasQuestions] = useState(false);
-  const supabase = createClient();
-
-  useEffect(() => {
-    /**
-     * Fetches conversations from the server and updates the state with the retrieved data.
-     * Sets the active conversation ID to the first conversation if data exists.
-     * Updates loading states during the fetch operation.
-     *
-     * @async
-     * @function fetchConversations
-     * @throws {Error} If the API call fails
-     *
-     * Side Effects:
-     * - Sets isFetchingForConversations loading state
-     * - Sets activeConversationId with first conversation's ID
-     * - Updates conversations state with mapped conversation data
-     * - Sets isConversationsFetched flag when complete
-     */
-    async function fetchConversations() {
-      setIsFetchingForConversations(true);
-      const response = await fetch("/api/conversations");
-      const data = await response.json();
-      const conversationsResult = {
-        success: true,
-        data: data,
-      };
-      if (conversationsResult.success && conversationsResult.data.length > 0) {
-        setActiveConversationId(conversationsResult.data[0].id);
-        setConversations(
-          conversationsResult.data.map((conversation) => ({
-            id: conversation.id,
-            title: conversation.title,
-          })),
-        );
-      }
-      setIsFetchingForConversations(false);
-      setIsConversationsFetched(true);
-    }
-
-    fetchConversations();
-  }, []);
-
-  useEffect(() => {
-    if (!isConversationsFetched) return;
-    /**
-     * Asynchronously fetches and sets questions, answers, and documents data for the active conversation.
-     * Updates loading states and data states based on the API responses.
-     *
-     * @async
-     * @function fetchData
-     * @throws {Error} Logs error message if questions or answers fetch fails
-     *
-     * Sets the following states:
-     * - isLoading: boolean
-     * - isFetchingForQuestions: boolean
-     * - hasQuestions: boolean
-     * - questions: Array<{content: string, id: string, conversationId: string}>
-     * - answers: Array<{content: string, filesUsedAsContext: any, questionId: string, conversationId: string}>
-     * - documents: Array<{id: string, name: string, size: number, isSelectedForRAG: boolean, type: string, path: string, nbChunks: number}>
-     *
-     * @returns {Promise<void>}
-     */
-    async function fetchData() {
-      setIsLoading(true);
-      setIsFetchingForQuestions(true);
-
-      const questionsResponse = await fetch(
-        `/api/questions?conversationId=${activeConversationId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      );
-      const questionsData = await questionsResponse.json();
-
-      const answersResult = await getAnswers(activeConversationId);
-      const documentsResult =
-        await getAllRAGSelectedDocuments(activeConversationId);
-
-      if (
-        questionsResponse.ok &&
-        answersResult.success &&
-        documentsResult.success
-      ) {
-        questionsData.length !== 0
-          ? setHasQuestions(true)
-          : setHasQuestions(false);
-        setQuestions(
-          questionsData.map((question) => {
-            return {
-              content: question.content,
-              id: question.id,
-              conversationId: question.conversationId,
-            };
-          }),
-        );
-        setAnswers(
-          answersResult.data.map((answer) => {
-            return {
-              content: answer.content,
-              filesUsedAsContext: answer.filesUsedAsContext,
-              questionId: answer.questionId,
-              conversationId: answer.conversationId,
-            };
-          }),
-        );
-        setDocuments(
-          documentsResult.data.map((document) => {
-            return {
-              id: document.id,
-              name: document.name,
-              size: document.size,
-              isSelectedForRAG: document.isSelectedForRAG,
-              type: document.type,
-              path: document.path,
-              nbChunks: document.nbChunks,
-            };
-          }),
-        );
-        setIsFetchingForQuestions(false);
-        setIsLoading(false);
-      } else if (questionsResult.error || answersResult.error) {
-        console.log("Something went wrong...");
-      }
-    }
-    fetchData();
-  }, [activeConversationId, isConversationsFetched]);
 
   useEffect(() => {
     questions.length !== 0 ? setHasQuestions(true) : setHasQuestions(false);
   }, [questions]);
+
+  // Fetch and set the current user
+  useEffect(() => {
+    async function fetchUser() {
+      const supabase = createClient();
+      const userResponse = await supabase.auth.getUser();
+      setUser(userResponse.data?.user);
+    }
+    fetchUser();
+  }, []);
+
+  // Fetch conversations for the current user
+  useEffect(() => {
+    if (!user) return;
+
+    async function fetchConversations() {
+      setIsFetchingForConversations(true);
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/users/${user.id}/conversations`);
+        const data = await response.json();
+
+        setConversations(data);
+        if (data.length > 0) {
+          setActiveConversationId(data[0].id); // Set the first conversation as active
+        }
+      } catch (error) {
+        console.error("Error fetching conversations:", error);
+      } finally {
+        setIsLoading(false);
+        setIsFetchingForConversations(false);
+      }
+    }
+
+    fetchConversations();
+  }, [user]);
+
+  useEffect(() => {
+    if (!activeConversationId || !user) return;
+
+    async function fetchQuestionsAndAnswers() {
+      setIsLoading(true);
+      setIsFetchingForQuestions(true);
+      try {
+        // Fetch questions for the active conversation
+        const questionsResponse = await fetch(
+          `/api/users/${user.id}/conversations/${activeConversationId}/questions`,
+        );
+        const questionsData = await questionsResponse.json();
+
+        // Set questions in state
+        setQuestions(questionsData);
+
+        // Fetch answers for each question
+        const answersPromises = questionsData.map(async (question) => {
+          const answersResponse = await fetch(
+            `/api/users/${user.id}/conversations/${activeConversationId}/questions/${question.id}/answers`,
+          );
+          return answersResponse.json();
+        });
+
+        // Wait for all answers to be fetched and flatten the results
+        const allAnswers = (await Promise.all(answersPromises)).flat();
+        setAnswers(allAnswers);
+
+        const documentsResult =
+          await getAllRAGSelectedDocuments(activeConversationId);
+
+        if (documentsResult.success) {
+          setDocuments(
+            documentsResult.data.map((document) => {
+              return {
+                id: document.id,
+                name: document.name,
+                size: document.size,
+                isSelectedForRAG: document.isSelectedForRAG,
+                type: document.type,
+                path: document.path,
+                nbChunks: document.nbChunks,
+              };
+            }),
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching questions and answers:", error);
+      } finally {
+        setIsLoading(false);
+        setIsFetchingForQuestions(false);
+      }
+    }
+
+    fetchQuestionsAndAnswers();
+  }, [activeConversationId, user]);
 
   /**
    * Stores a question in the database and updates the local state.
@@ -224,8 +177,8 @@ export function ChatContextProvider({ children }) {
       },
       body: JSON.stringify({
         content: question,
-        conversationId: activeConversationId,
-        userId: userResponse.data.user.id,
+        conversation_id: activeConversationId,
+        user_id: userResponse.data.user.id,
       }),
     });
 
@@ -244,211 +197,170 @@ export function ChatContextProvider({ children }) {
     return questionId;
   }
 
-  /**
-   * Removes a question and its associated answer from the state and database
-   * @async
-   * @param {string|number} questionId - The unique identifier of the question to be removed
-   * @throws {Error} If the deletion operation fails
-   * @returns {Promise<void>}
-   */
-  async function removeQuestionAndAssociatedAnswer(questionId) {
-    const supabase = createClient();
-    const userResponse = await supabase.auth.getUser();
-
-    if (!userResponse.data?.user) {
-      throw new Error("User not authenticated");
-    }
-
-    setQuestions((questions) =>
-      questions.filter((question) => question.id !== questionId),
-    );
-    setAnswers((answers) =>
-      answers.filter((answer) => answer.questionId !== questionId),
-    );
-
+  // Methods for Conversations
+  async function createNewEmptyConversation(title = "New Conversation") {
     try {
-      const response = await fetch("/api/questions", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          questionId: questionId,
-          userId: userResponse.data.user.id,
-        }),
+      const response = await fetch(`/api/users/${user.id}/conversations`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
       });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete question");
-      }
+      const data = await response.json();
+      setConversations((prev) => [...prev, data]);
+      setActiveConversationId(data.id);
     } catch (error) {
-      console.error("Error deleting question:", error);
+      console.error("Error creating new conversation:", error);
     }
   }
 
-  /**
-   * Creates a new empty answer object and adds it to the answers state.
-   * @param {string|number} questionId - The ID of the question this answer corresponds to
-   * @returns {Object} The newly created answer object with empty content and context files
-   */
-  function createNewEmptyAnswer(questionId) {
-    const newEmptyAnswer = { content: "", filesUsedAsContext: [], questionId };
-    setAnswers((answers) => [...answers, newEmptyAnswer]);
-    return newEmptyAnswer;
-  }
-
-  /**
-   * Updates the answers array by appending a new answer
-   * @param {any} answer - The answer to be added to the answers array
-   * @returns {void}
-   */
-  function updateAnswer(answer) {
-    setAnswers((answers) => [...answers, answer]);
-  }
-
-  /**
-   * Stores an answer in the database for a given question.
-   * @async
-   * @param {Object} params - The parameters object.
-   * @param {string} params.content - The content of the answer.
-   * @param {Array} params.filesUsedAsContext - Array of files used as context for the answer.
-   * @param {string} params.questionId - The ID of the question being answered.
-   * @throws {Error} Throws an error if storing the answer fails.
-   * @returns {Promise<void>}
-   */
-  async function storeAnswer({ content, filesUsedAsContext, questionId }) {
-    // Add the question to the database
-    const { success, data } = await addAnswer(
-      content,
-      filesUsedAsContext,
-      questionId,
-      activeConversationId,
-    );
-    if (!success || !data || data.length === 0) {
-      throw new Error("Failed to add the answer to the database.");
-    }
-  }
-
-  /**
-   * Creates a new empty conversation with a default title and adds it to the conversations list.
-   * @async
-   * @function createNewEmptyConversation
-   * @returns {Promise<Object>} A promise that resolves to the newly created conversation object
-   *                           containing the title and id properties.
-   * @throws {Error} If the conversation creation fails
-   */
-  async function createNewEmptyConversation() {
-    const title = "New conversation";
-
-    const supabase = createClient();
-
-    const userResponse = await supabase.auth.getUser();
-
-    if (!userResponse.data?.user) {
-      throw new Error("User not authenticated");
-    }
-
-    const response = await fetch("/api/conversations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: title,
-        user_id: userResponse.data.user.id,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (response.error) {
-      throw new Error(response.error);
-    }
-
-    const newEmptyConversation = { title, id: data.id };
-    setConversations((conversations) => [
-      ...conversations,
-      newEmptyConversation,
-    ]);
-
-    setActiveConversationId(data.id);
-
-    return newEmptyConversation;
-  }
-
-  /**
-   * Updates the title of a specific conversation both in local state and database
-   * @param {string} conversationId - The unique identifier of the conversation to update
-   * @param {string} newTitle - The new title to set for the conversation
-   * @returns {Promise<void>} A promise that resolves when the update is complete
-   * @throws {Error} When the database update fails
-   */
   async function updateConversationTitle(conversationId, newTitle) {
-    // Update the title in the local state
-    setConversations((conversations) =>
-      conversations.map((conversation) =>
-        conversation.id === conversationId
-          ? { ...conversation, title: newTitle }
-          : conversation,
-      ),
-    );
-
     try {
-      const response = await fetch("/api/conversations", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `/api/users/${user.id}/conversations/${conversationId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newTitle }),
         },
-        body: JSON.stringify({ conversationId, newTitle }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to update conversation title");
+      );
+      if (response.ok) {
+        setConversations((prev) =>
+          prev.map((conversation) =>
+            conversation.id === conversationId
+              ? { ...conversation, title: newTitle }
+              : conversation,
+          ),
+        );
       }
     } catch (error) {
       console.error("Error updating conversation title:", error);
     }
   }
 
-  /**
-   * Deletes a conversation from both local state and the database.
-   * @async
-   * @param {number|string} conversationId - The unique identifier of the conversation to delete.
-   * @throws {Error} When the database deletion operation fails.
-   * @returns {Promise<void>}
-   */
   async function deleteConversation(conversationId) {
-    // Update the local state to remove the conversation
-    setConversations((conversations) =>
-      conversations.filter(
-        (conversation) => conversation.id !== conversationId,
-      ),
-    );
-
-    // Reset active conversation if the deleted conversation was active
-    if (activeConversationId === conversationId) {
-      setActiveConversationId(
-        conversations.length > 0 ? conversations[0].id : -1,
-      );
-    }
-
     try {
-      const response = await fetch("/api/conversations", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `/api/users/${user.id}/conversations/${conversationId}`,
+        {
+          method: "DELETE",
         },
-        body: JSON.stringify({ conversationId }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete conversation");
+      );
+      if (response.ok) {
+        setConversations((prev) =>
+          prev.filter((conversation) => conversation.id !== conversationId),
+        );
+        if (conversationId === activeConversationId) {
+          setActiveConversationId(
+            conversations.length > 0 ? conversations[0].id : null,
+          );
+        }
       }
     } catch (error) {
       console.error("Error deleting conversation:", error);
+    }
+  }
+
+  // Methods for Questions
+  async function storeQuestion(content) {
+    try {
+      const response = await fetch(
+        `/api/users/${user.id}/conversations/${activeConversationId}/questions`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        },
+      );
+      const data = await response.json();
+      setQuestions((prev) => [...prev, data]);
+      return data.id; // Return the question ID
+    } catch (error) {
+      console.error("Error adding question:", error);
+      throw error; // Re-throw error to handle it in the calling code
+    }
+  }
+
+  async function deleteQuestion(questionId) {
+    try {
+      const response = await fetch(
+        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}`,
+        {
+          method: "DELETE",
+        },
+      );
+      if (response.ok) {
+        setQuestions((prev) =>
+          prev.filter((question) => question.id !== questionId),
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting question:", error);
+    }
+  }
+
+  // Methods for Answers
+  async function storeAnswer(questionId, content, filesUsedAsContext = []) {
+    try {
+      const response = await fetch(
+        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}/answers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content, filesUsedAsContext }),
+        },
+      );
+      const data = await response.json();
+      setAnswers((prev) => [...prev, data]);
+    } catch (error) {
+      console.error("Error adding answer:", error);
+    }
+  }
+
+  async function createNewEmptyAnswer(questionId) {
+    try {
+      const response = await fetch(
+        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}/answers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: "", isTemp: true }),
+        },
+      );
+      const data = await response.json();
+      setAnswers((prev) => [...prev, data]);
+      return data;
+    } catch (error) {
+      console.error("Error creating empty answer:", error);
+      return null;
+    }
+  }
+
+  async function updateAnswer(
+    question_id,
+    answer_id,
+    content,
+    filesUsedAsContext = [],
+  ) {
+    try {
+      const response = await fetch(
+        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${question_id}/answers/${answer_id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content, filesUsedAsContext }),
+        },
+      );
+      if (response.ok) {
+        setAnswers((prev) =>
+          prev.map((answer) =>
+            answer.id === answer_id
+              ? { ...answer, content, filesUsedAsContext }
+              : answer,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error("Error updating answer:", error);
     }
   }
 
@@ -468,7 +380,7 @@ export function ChatContextProvider({ children }) {
     createNewEmptyAnswer,
     updateAnswer,
     storeAnswer,
-    removeQuestionAndAssociatedAnswer,
+    deleteQuestion,
     documents,
     intentionToDeleteQuestion,
     setIntentionToDeleteQuestion,

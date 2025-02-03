@@ -1,23 +1,17 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
 
-export async function GET(request) {
+export async function GET(request, { params }) {
+  const { user_id, conversation_id } = await params;
   const supabase = await createClient();
+
   try {
-    const { searchParams } = new URL(request.url);
-    const conversationId = searchParams.get("conversationId");
-
-    if (!conversationId) {
-      return NextResponse.json(
-        { error: "Conversation ID is required" },
-        { status: 400 },
-      );
-    }
-
     const { data, error } = await supabase
       .from("questions")
       .select("*")
-      .eq("conversationId", conversationId);
+      .eq("user_id", user_id)
+      .eq("conversation_id", conversation_id)
+      .order("created_at", { ascending: true });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
@@ -32,28 +26,31 @@ export async function GET(request) {
   }
 }
 
-export async function POST(request) {
+export async function POST(request, { params }) {
+  const { user_id, conversation_id } = await params;
   const supabase = await createClient();
-  try {
-    const { content, conversationId, userId } = await request.json();
 
-    if (!content || !conversationId || !userId) {
+  try {
+    const { content } = await request.json();
+
+    if (!content) {
       return NextResponse.json(
-        { error: "Content, conversationId, and userId are required" },
+        { error: "Content is required" },
         { status: 400 },
       );
     }
 
     const { data, error } = await supabase
       .from("questions")
-      .insert([{ content, conversationId, user_id: userId }])
-      .select();
+      .insert([{ content, conversation_id, user_id }])
+      .select()
+      .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data[0], { status: 201 });
+    return NextResponse.json(data, { status: 201 });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal Server Error" },
@@ -62,29 +59,22 @@ export async function POST(request) {
   }
 }
 
-export async function DELETE(request) {
+export async function DELETE(request, { params }) {
+  const { user_id, conversation_id } = await params;
   const supabase = await createClient();
+
   try {
-    const { questionId, userId } = await request.json();
-
-    if (!questionId || !userId) {
-      return NextResponse.json(
-        { error: "Question ID and User ID are required" },
-        { status: 400 },
-      );
-    }
-
     const { error } = await supabase
       .from("questions")
       .delete()
-      .eq("id", questionId)
-      .eq("user_id", userId);
+      .eq("user_id", user_id)
+      .eq("conversation_id", conversation_id);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: "Question deleted successfully" });
+    return NextResponse.json({ message: "Questions deleted successfully" });
   } catch (error) {
     return NextResponse.json(
       { error: "Internal Server Error" },

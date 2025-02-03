@@ -1,6 +1,7 @@
 import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
 import { getTheme } from "@/lib/supabase";
+import Header from "./ui-components/Header";
 
 // Import Poppins font
 const poppins = Poppins({

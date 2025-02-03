@@ -9,8 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@huggingface/transformers": "^3.2.4",
     "@langchain/community": "^0.3.20",
+    "@mui/icons-material": "^6.4.2",
+    "@mui/material": "^6.4.2",
     "@pinecone-database/pinecone": "^4.0.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",

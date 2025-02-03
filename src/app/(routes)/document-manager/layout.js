@@ -20,10 +20,6 @@ function Layout({ children }) {
                 "/document-manager/document-management/my-documents/all-documents"
               }
             />
-            <SubSettingsItem
-              title={"Manage Roles"}
-              href={"/document-manager/document-management/manage-roles"}
-            />
           </SettingsItem>
           <SettingsItem
             title={"Storage"}

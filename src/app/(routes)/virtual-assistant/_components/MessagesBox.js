@@ -31,18 +31,18 @@ function MessagesBox() {
         return (
           <div key={question.id}>
             <Question
-              handleDelete={context.removeQuestionAndAssociatedAnswer}
+              handleDelete={context.deleteQuestion}
               questionId={question.id}
             >
               {question.content}
             </Question>
             <Answer
               answer={context.answers.find((answer) => {
-                return answer.questionId === question.id;
+                return answer.question_id === question.id;
               })}
               filesUsedAsContext={
                 context.answers.find((answer) => {
-                  return answer.questionId === question.id;
+                  return answer.question_id === question.id;
                 })?.filesUsedAsContext
               }
             ></Answer>

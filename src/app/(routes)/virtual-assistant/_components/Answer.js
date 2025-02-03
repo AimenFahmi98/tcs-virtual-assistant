@@ -56,7 +56,7 @@ function Answer({ answer, filesUsedAsContext }) {
   return (
     <div
       className={`${
-        context.intentionToDeleteQuestion.questionId === answer?.questionId &&
+        context.intentionToDeleteQuestion.questionId === answer?.question_id &&
         "bg-primary_light"
       } rounded-b-3xl px-12 pb-8 pt-2`}
     >

@@ -70,7 +70,7 @@ function QuestionBox() {
     }
 
     try {
-      const questionId = await context.storeQuestion(question);
+      const question_id = await context.storeQuestion(question);
 
       // Fetch the answer stream and files used
       const documentNames = context.documents.map((doc) => doc.name);
@@ -91,7 +91,7 @@ function QuestionBox() {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let answer = context.createNewEmptyAnswer(questionId);
+      let answer = await context.createNewEmptyAnswer(question_id);
 
       while (true) {
         const { value, done } = await reader.read();
@@ -101,7 +101,7 @@ function QuestionBox() {
 
         answer.content += chunk;
 
-        context.updateAnswer(answer); // Update the answer in the UI
+        context.updateAnswer(question_id, answer.id, answer.content); // Update the answer in the UI
       }
 
       // Fetch the new title and files used
@@ -120,9 +120,12 @@ function QuestionBox() {
 
         // Optionally, store or process the filesUsed
         answer.filesUsedAsContext = filesUsed;
-        context.updateAnswer(answer);
-
-        await context.storeAnswer(answer);
+        context.updateAnswer(
+          question_id,
+          answer.id,
+          answer.content,
+          answer.filesUsedAsContext,
+        );
       } else {
         console.error("Failed to fetch new conversation title or files used.");
       }
