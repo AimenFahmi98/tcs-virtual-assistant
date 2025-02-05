@@ -59,7 +59,7 @@ function ProfileMenu({ title }) {
       <DropDownMenu
         trigger={
           <div
-            className={`relative mx-auto flex items-center justify-center gap-2 rounded-full border-4 border-background px-5 py-2.5 text-sm text-background transition duration-300 hover:cursor-pointer hover:border-4 hover:border-primary_dark ${
+            className={`relative mx-auto flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm text-background transition-all duration-300 hover:scale-95 hover:cursor-pointer ${
               isAdmin ? "bg-yellow-300 text-yellow-900" : "bg-secondary"
             }`}
           >
@@ -104,7 +104,7 @@ function ProfileMenu({ title }) {
             <Link
               href={"/admin-settings/roles"}
               className={
-                "flex w-full items-center justify-start gap-3 rounded-lg px-4 py-3 text-yellow-900 hover:bg-primary"
+                "flex w-full items-center justify-start gap-3 rounded-lg bg-yellow-300 px-4 py-3 text-yellow-900 hover:bg-yellow-400"
               }
             >
               <TbUserShield className="h-5 w-5" />

@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaTrashAlt } from "react-icons/fa";
+import { FaTrash, FaTrashAlt } from "react-icons/fa6";
 import { IoMdSearch } from "react-icons/io";
 import { GoPlus } from "react-icons/go";
 import { BiUser } from "react-icons/bi";
 import ProfileMenu from "@/app/ui-components/ProfileMenu";
+import Spinner from "@/app/ui-components/Spinner";
+import { HiOutlineTrash, HiTrash } from "react-icons/hi2";
 
 async function fetchRoles() {
   try {
@@ -25,9 +27,16 @@ export default function Page() {
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleDescription, setNewRoleDescription] = useState("");
   const [roleBeingDeleted, setRoleBeingDeleted] = useState(-1);
+  const [isFetchingData, setIsFetchingData] = useState(false);
 
   useEffect(() => {
-    fetchRoles().then((data) => setRoles(data));
+    const getRoles = async () => {
+      setIsFetchingData(true);
+      const data = await fetchRoles();
+      setRoles(data);
+      setIsFetchingData(false);
+    };
+    getRoles();
   }, []);
 
   const filteredRoles = roles.filter(
@@ -115,37 +124,41 @@ export default function Page() {
           className="overflow-y-auto p-2"
           style={{ maxHeight: "calc(100vh - 240px)" }}
         >
-          <div className="space-y-2">
-            {filteredRoles.map((role) => (
-              <div
-                key={role.id}
-                className={`group transform rounded-lg border-2 border-primary bg-primary_light p-4 transition-all duration-200 hover:shadow-md ${
-                  roleBeingDeleted === role.id && "bg-red-50 blur-sm"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-start justify-start gap-2">
-                      <BiUser className="h-6 w-6" />
-                      <h4 className="text-lg font-semibold text-text">
-                        {role.name}
-                      </h4>
+          {isFetchingData ? (
+            <Spinner />
+          ) : (
+            <div className="space-y-2">
+              {filteredRoles.map((role) => (
+                <div
+                  key={role.id}
+                  className={`group transform rounded-lg border-2 border-primary bg-primary_light p-4 transition-all duration-200 hover:shadow-md ${
+                    roleBeingDeleted === role.id && "bg-red-50 blur-sm"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-start justify-start gap-2">
+                        <BiUser className="h-6 w-6" />
+                        <h4 className="text-lg font-semibold text-text">
+                          {role.name}
+                        </h4>
+                      </div>
+                      <p className="mt-1 text-sm text-text_light">
+                        {role.description}
+                      </p>
                     </div>
-                    <p className="mt-1 text-sm text-text_light">
-                      {role.description}
-                    </p>
+                    <button
+                      disabled={roleBeingDeleted === role.id}
+                      onClick={() => handleDeleteRole(role.id)}
+                      className="rounded-md bg-transparent p-2 opacity-0 transition-all group-hover:opacity-100"
+                    >
+                      <HiTrash className="h-6 w-6 text-red-500 transition-all hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                    </button>
                   </div>
-                  <button
-                    disabled={roleBeingDeleted === role.id}
-                    onClick={() => handleDeleteRole(role.id)}
-                    className="rounded-md bg-transparent p-2 opacity-0 transition-all group-hover:opacity-100"
-                  >
-                    <FaTrashAlt className="h-5 w-5 text-red-500 transition-all hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-                  </button>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Add Role Dialog */}

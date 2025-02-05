@@ -20,6 +20,7 @@
     "@supabase/supabase-js": "^2.47.10",
     "date-fn": "^0.0.2",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.1.0",
     "gpt-tokenizer": "^2.8.1",
     "html-react-parser": "^5.2.2",
     "jszip": "^3.10.1",
