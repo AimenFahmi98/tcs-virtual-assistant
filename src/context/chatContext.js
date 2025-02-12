@@ -1,6 +1,5 @@
 "use client";
 
-import { getAnswers, getAllRAGSelectedDocuments } from "@/lib/supabase";
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
@@ -128,12 +127,15 @@ export function ChatContextProvider({ children }) {
         const allAnswers = (await Promise.all(answersPromises)).flat();
         setAnswers(allAnswers);
 
-        const documentsResult =
-          await getAllRAGSelectedDocuments(activeConversationId);
+        // Fetch RAG selected documents
+        const documentsResponse = await fetch(
+          `/api/supabase/users/${user.id}/documents/selected-for-rag`,
+        );
+        const documentsResult = await documentsResponse.json();
 
-        if (documentsResult.success) {
+        if (!documentsResult.error) {
           setDocuments(
-            documentsResult.data.map((document) => {
+            documentsResult.documents.map((document) => {
               return {
                 id: document.id,
                 name: document.name,
