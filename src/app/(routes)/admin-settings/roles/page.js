@@ -1,17 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaTrash, FaTrashAlt } from "react-icons/fa6";
 import { IoMdSearch } from "react-icons/io";
 import { GoPlus } from "react-icons/go";
 import { BiUser } from "react-icons/bi";
-import ProfileMenu from "@/app/ui-components/ProfileMenu";
 import Spinner from "@/app/ui-components/Spinner";
-import { HiOutlineTrash, HiTrash } from "react-icons/hi2";
+import { FaRegTrashAlt } from "react-icons/fa";
 
 async function fetchRoles() {
   try {
-    const response = await fetch("/api/roles");
+    const response = await fetch("/api/supabase/roles");
     if (!response.ok) throw new Error("Failed to fetch roles");
     const data = await response.json();
     return Array.isArray(data) ? data : [];
@@ -48,7 +46,7 @@ export default function Page() {
   const handleAddRole = async () => {
     if (!newRoleName.trim()) return;
 
-    const response = await fetch("/api/roles", {
+    const response = await fetch("/api/supabase/roles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -68,7 +66,7 @@ export default function Page() {
   const handleDeleteRole = async (id) => {
     try {
       setRoleBeingDeleted(id);
-      const response = await fetch(`/api/roles/${id}`, {
+      const response = await fetch(`/api/supabase/roles/${id}`, {
         method: "DELETE",
       });
 
@@ -86,11 +84,6 @@ export default function Page() {
 
   return (
     <div>
-      <div className="flex items-center justify-end p-4">
-        <div className="w-fit">
-          <ProfileMenu />
-        </div>
-      </div>
       <div className="m-auto min-h-full max-w-7xl px-8 py-2">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-text">Role Management</h1>
@@ -113,7 +106,7 @@ export default function Page() {
 
           <button
             onClick={() => document.getElementById("addRoleForm").showModal()}
-            className="hover:bg-accent_secondary_light flex items-center gap-2 whitespace-nowrap rounded-full bg-accent_secondary px-6 py-3 text-sm text-background transition-all"
+            className="flex items-center gap-2 whitespace-nowrap rounded-full bg-accent_secondary px-6 py-3 text-sm text-background transition-all hover:bg-accent_secondary_light"
           >
             <GoPlus className="h-4 w-4" />
             Add New Role
@@ -131,7 +124,7 @@ export default function Page() {
               {filteredRoles.map((role) => (
                 <div
                   key={role.id}
-                  className={`group transform rounded-lg border-2 border-primary bg-primary_light p-4 transition-all duration-200 hover:shadow-md ${
+                  className={`group transform rounded-lg border-2 border-primary bg-primary_light p-4 transition-all duration-200 hover:bg-primary ${
                     roleBeingDeleted === role.id && "bg-red-50 blur-sm"
                   }`}
                 >
@@ -152,7 +145,7 @@ export default function Page() {
                       onClick={() => handleDeleteRole(role.id)}
                       className="rounded-md bg-transparent p-2 opacity-0 transition-all group-hover:opacity-100"
                     >
-                      <HiTrash className="h-6 w-6 text-red-500 transition-all hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                      <FaRegTrashAlt className="h-5 w-5 text-red-500 transition-all hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
                     </button>
                   </div>
                 </div>
@@ -210,7 +203,7 @@ export default function Page() {
               </button>
               <button
                 type="submit"
-                className="hover:bg-accent_secondary_light rounded-lg bg-accent_secondary px-6 py-3 text-sm font-medium text-background transition-all hover:shadow-lg"
+                className="rounded-lg bg-accent_secondary px-6 py-3 text-sm font-medium text-background transition-all hover:bg-accent_secondary_light hover:shadow-lg"
               >
                 Add Role
               </button>

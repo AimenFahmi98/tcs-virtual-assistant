@@ -4,14 +4,13 @@ import SettingsItem from "../../ui-components/SettingsItem";
 import SubSettingsItem from "@/app/ui-components/SubSettingsItem";
 import { VscAccount } from "react-icons/vsc";
 import { PiPaintBrush } from "react-icons/pi";
+import Header from "@/app/ui-components/Header";
 
 function Layout({ children }) {
   return (
-    <div className="grid grid-cols-[auto_1fr]">
-      {/* <Sidebar>
-        <SettingsList />
-      </Sidebar> */}
-      <Sidebar>
+    <>
+      <Header />
+      <Sidebar className="row-span-full">
         <SettingsNav>
           <SettingsItem
             icon={<VscAccount className="h-5 w-5" />}
@@ -31,7 +30,7 @@ function Layout({ children }) {
         </SettingsNav>
       </Sidebar>
       <main>{children}</main>
-    </div>
+    </>
   );
 }
 

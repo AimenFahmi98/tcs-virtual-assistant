@@ -80,7 +80,9 @@ export function ChatContextProvider({ children }) {
       setIsFetchingForConversations(true);
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/users/${user.id}/conversations`);
+        const response = await fetch(
+          `/api/supabase/users/${user.id}/conversations`,
+        );
         const data = await response.json();
 
         setConversations(data);
@@ -107,7 +109,7 @@ export function ChatContextProvider({ children }) {
       try {
         // Fetch questions for the active conversation
         const questionsResponse = await fetch(
-          `/api/users/${user.id}/conversations/${activeConversationId}/questions`,
+          `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions`,
         );
         const questionsData = await questionsResponse.json();
 
@@ -117,7 +119,7 @@ export function ChatContextProvider({ children }) {
         // Fetch answers for each question
         const answersPromises = questionsData.map(async (question) => {
           const answersResponse = await fetch(
-            `/api/users/${user.id}/conversations/${activeConversationId}/questions/${question.id}/answers`,
+            `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions/${question.id}/answers`,
           );
           return answersResponse.json();
         });
@@ -170,7 +172,7 @@ export function ChatContextProvider({ children }) {
       throw new Error("User not authenticated");
     }
 
-    const response = await fetch("/api/questions", {
+    const response = await fetch("/api/supabase/questions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -200,11 +202,14 @@ export function ChatContextProvider({ children }) {
   // Methods for Conversations
   async function createNewEmptyConversation(title = "New Conversation") {
     try {
-      const response = await fetch(`/api/users/${user.id}/conversations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title }),
-      });
+      const response = await fetch(
+        `/api/supabase/users/${user.id}/conversations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title }),
+        },
+      );
       const data = await response.json();
       setConversations((prev) => [...prev, data]);
       setActiveConversationId(data.id);
@@ -216,7 +221,7 @@ export function ChatContextProvider({ children }) {
   async function updateConversationTitle(conversationId, newTitle) {
     try {
       const response = await fetch(
-        `/api/users/${user.id}/conversations/${conversationId}`,
+        `/api/supabase/users/${user.id}/conversations/${conversationId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -240,7 +245,7 @@ export function ChatContextProvider({ children }) {
   async function deleteConversation(conversationId) {
     try {
       const response = await fetch(
-        `/api/users/${user.id}/conversations/${conversationId}`,
+        `/api/supabase/users/${user.id}/conversations/${conversationId}`,
         {
           method: "DELETE",
         },
@@ -264,7 +269,7 @@ export function ChatContextProvider({ children }) {
   async function storeQuestion(content) {
     try {
       const response = await fetch(
-        `/api/users/${user.id}/conversations/${activeConversationId}/questions`,
+        `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -283,7 +288,7 @@ export function ChatContextProvider({ children }) {
   async function deleteQuestion(questionId) {
     try {
       const response = await fetch(
-        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}`,
+        `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}`,
         {
           method: "DELETE",
         },
@@ -302,7 +307,7 @@ export function ChatContextProvider({ children }) {
   async function storeAnswer(questionId, content, filesUsedAsContext = []) {
     try {
       const response = await fetch(
-        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}/answers`,
+        `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}/answers`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -319,7 +324,7 @@ export function ChatContextProvider({ children }) {
   async function createNewEmptyAnswer(questionId) {
     try {
       const response = await fetch(
-        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}/answers`,
+        `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions/${questionId}/answers`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -343,7 +348,7 @@ export function ChatContextProvider({ children }) {
   ) {
     try {
       const response = await fetch(
-        `/api/users/${user.id}/conversations/${activeConversationId}/questions/${question_id}/answers/${answer_id}`,
+        `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions/${question_id}/answers/${answer_id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

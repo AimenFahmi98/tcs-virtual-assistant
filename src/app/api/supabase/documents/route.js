@@ -34,10 +34,6 @@
  * @throws {Error} When file processing or storage operations fail
  */
 import { NextResponse } from "next/server";
-import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import mammoth from "mammoth";
-import { encode } from "gpt-tokenizer";
-import pdfParse from "pdf-parse";
 import {
   uploadFileToSupabase,
   addDocumentToSupabase,
@@ -45,6 +41,8 @@ import {
 } from "@/lib/supabase";
 import PineconeController from "@/lib/pinecone";
 import OpenaiController from "@/lib/openai";
+import { processDocument } from "@/utils/document-management/processing/simpleProcessing";
+import { createClient } from "@/utils/supabase/server";
 
 /**
  * @constant {OpenaiController} openai
@@ -58,73 +56,65 @@ const openai = new OpenaiController();
 const pinecone = new PineconeController();
 
 /**
- * Extracts text content from a PDF file buffer
- * @param {ArrayBuffer} arrayBuffer - The array buffer containing the PDF data
- * @returns {Promise<string>} The extracted text content from the PDF, trimmed of whitespace
- * @throws {Error} If PDF parsing fails
+ * Retrieves all documents from the database.
+ * @async
+ * @returns {Promise<Object>} Result object containing:
+ * @returns {boolean} .success - Whether the operation was successful
+ * @returns {Array|null} .data - Array of document objects if found
+ * @returns {string|null} .error - Error message if any
  */
-async function extractTextFromPDF(arrayBuffer) {
-  const buffer = Buffer.from(arrayBuffer);
-  const pdfData = await pdfParse(buffer);
-  return pdfData.text.trim();
-}
+export async function GET() {
+  try {
+    const supabase = await createClient();
+    // Query documents with optional ordering
+    const { data, error } = await supabase
+      .from("documents")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-/**
- * Processes a document file and extracts its content into chunks for further processing.
- *
- * @param {File} file - The file object to process
- * @param {string} fileName - The name of the file including extension
- *
- * @returns {Promise<Object>} An object containing:
- *   - chunks: Array of text chunks after splitting
- *   - metadata: Object containing:
- *     - fileName: Original file name
- *     - fileSize: Size of file in bytes
- *     - fileType: File extension (pdf, docx, or txt)
- *     - numTokens: Total number of tokens in the text
- *     - numChunks: Number of chunks after splitting
- *
- * @throws {Error} If file type is not supported (only pdf, docx, and txt are supported)
- */
-export async function processDocument(file, fileName) {
-  const fileExtension = fileName.split(".").pop().toLowerCase();
-  const metadata = {
-    fileName,
-    fileSize: file.size,
-    fileType: fileExtension,
-    numTokens: 0,
-    numChunks: 0,
-  };
+    if (error) {
+      console.error("Error fetching documents:", error.message);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to fetch documents",
+          details: error.message,
+        },
+        { status: 500 },
+      );
+    }
 
-  let text = "";
+    if (!data || data.length === 0) {
+      return NextResponse.json(
+        {
+          success: true,
+          data: [],
+          message: "No documents found",
+        },
+        { status: 200 },
+      );
+    }
 
-  const arrayBuffer = await file.arrayBuffer();
-
-  if (fileExtension === "pdf") {
-    text = await extractTextFromPDF(arrayBuffer);
-  } else if (fileExtension === "docx") {
-    const docxData = await mammoth.extractRawText({ buffer: arrayBuffer });
-    text = docxData.value;
-  } else if (fileExtension === "txt") {
-    text = new TextDecoder("utf-8").decode(arrayBuffer);
-  } else {
-    throw new Error(
-      "Unsupported file type. Supported types: .pdf, .docx, .txt",
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        count: data.length,
+        message: "Documents retrieved successfully",
+      },
+      { status: 200 },
+    );
+  } catch (err) {
+    console.error("Unexpected error fetching documents:", err);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Internal server error",
+        details: err.message,
+      },
+      { status: 500 },
     );
   }
-
-  text = text.replace(/\s+/g, " ").trim();
-
-  const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 500,
-    chunkOverlap: 50,
-  });
-  const chunks = await splitter.splitText(text);
-
-  metadata.numTokens = encode(text).length;
-  metadata.numChunks = chunks.length;
-
-  return { chunks, metadata };
 }
 
 /**
@@ -157,21 +147,6 @@ export async function POST(request) {
       );
     }
 
-    // Upload file to Supabase storage
-    const supabaseUploadFileResponse = await uploadFileToSupabase(
-      file,
-      "documents",
-    );
-    if (!supabaseUploadFileResponse.success) {
-      if (supabaseUploadFileResponse.path) {
-        return NextResponse.json(
-          { success: true, message: "File already exists." },
-          { status: 200 },
-        );
-      }
-      throw new Error("Error uploading file to Supabase storage.");
-    }
-
     const { chunks, metadata } = await processDocument(file, file.name);
 
     // Store document metadata in Supabase
@@ -191,7 +166,6 @@ export async function POST(request) {
     }
 
     const documentId = supabaseResult.data.id;
-    console.log(documentId);
 
     // Generate and store embeddings in Pinecone
     const embeddings = await openai.generateOpenAIEmbeddings(

@@ -9,7 +9,7 @@ function BtnSignOut({ className }) {
   async function handleSignOut() {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/auth/signout", {
+      const response = await fetch("/api/supabase/auth/signout", {
         method: "POST",
       });
 

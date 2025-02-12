@@ -66,6 +66,8 @@ function DocumentTable({ documents }) {
     }
   };
 
+  async function handleSelectForRAG(ids) {}
+
   /**
    * Toggles the selection state of a document in the selected documents Set.
    * If the document is already selected, it will be removed from the selection.
@@ -99,7 +101,7 @@ function DocumentTable({ documents }) {
   };
 
   return (
-    <div className={`mx-auto w-[95%] flex-1 py-2`}>
+    <div className={`mx-auto max-h-[500px] w-[95%] flex-1 py-2`}>
       {selectedDocuments.size > 0 && (
         <div className="flex items-center justify-start gap-4 bg-background">
           <button

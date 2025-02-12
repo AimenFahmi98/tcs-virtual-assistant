@@ -44,16 +44,31 @@ function BtnUploadDocument() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:3000/api/documents", {
-        method: "POST",
-        body: formData,
-      });
+      const rawFileUploadResponse = await fetch(
+        "http://localhost:3000/api/supabase/files/uploads",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
-      if (!response.ok) {
+      if (!rawFileUploadResponse.ok) {
+        throw new Error("Failed to upload the raw file to supabase.");
+      }
+
+      const documentUploadResponse = await fetch(
+        "http://localhost:3000/api/supabase/documents",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      if (!documentUploadResponse.ok) {
         throw new Error("Failed to process and upload the document.");
       }
 
-      const result = await response.json();
+      const result = await documentUploadResponse.json();
 
       if (result.success) {
         // Display success toast

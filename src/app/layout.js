@@ -30,7 +30,9 @@ export default async function RootLayout({ children }) {
       <body
         className={`${poppins.className} bg-background text-text transition-all duration-300`}
       >
-        {children}
+        <div className="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr]">
+          {children}
+        </div>
       </body>
     </html>
   );

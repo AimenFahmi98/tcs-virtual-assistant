@@ -7,7 +7,7 @@ import { GoPlus } from "react-icons/go";
 import ProfileMenu from "@/app/ui-components/ProfileMenu";
 import Spinner from "@/app/ui-components/Spinner";
 import Image from "next/image";
-import { FiPlus } from "react-icons/fi";
+import { FiMinus, FiPlus } from "react-icons/fi";
 import AppLogo from "@/app/ui-components/AppLogo";
 
 export default function Page() {
@@ -23,7 +23,7 @@ export default function Page() {
 
   async function fetchUsers() {
     try {
-      const response = await fetch("/api/users");
+      const response = await fetch("/api/supabase/users");
       if (!response.ok) throw new Error("Failed to fetch users");
       return await response.json();
     } catch (error) {
@@ -35,7 +35,7 @@ export default function Page() {
   async function fetchUserRoles(userId) {
     setIsLoadingUserRoles(true);
     try {
-      const response = await fetch(`/api/users/${userId}/roles`);
+      const response = await fetch(`/api/supabase/users/${userId}/roles`);
       if (!response.ok) throw new Error("Failed to fetch user roles");
       return await response.json();
     } catch (error) {
@@ -48,7 +48,7 @@ export default function Page() {
 
   async function fetchAvailableRoles() {
     try {
-      const response = await fetch("/api/roles");
+      const response = await fetch("/api/supabase/roles");
       if (!response.ok) throw new Error("Failed to fetch roles");
       return await response.json();
     } catch (error) {
@@ -93,11 +93,14 @@ export default function Page() {
     setUpdatingRoleId(roleId);
 
     try {
-      const response = await fetch(`/api/users/${selectedUserId}/roles`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role_id: roleId }),
-      });
+      const response = await fetch(
+        `/api/supabase/users/${selectedUserId}/roles`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role_id: roleId }),
+        },
+      );
 
       if (response.ok) {
         const roles = await fetchUserRoles(selectedUserId);
@@ -115,11 +118,14 @@ export default function Page() {
     setUpdatingRoleId(roleId);
 
     try {
-      const response = await fetch(`/api/users/${selectedUserId}/roles`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role_id: roleId }),
-      });
+      const response = await fetch(
+        `/api/supabase/users/${selectedUserId}/roles`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role_id: roleId }),
+        },
+      );
 
       if (response.ok) {
         const roles = await fetchUserRoles(selectedUserId);
@@ -133,15 +139,10 @@ export default function Page() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-l from-primary_light to-primary">
-      <div className="m-auto min-h-full max-w-[95%] py-2">
-        <div className="mb-8 flex items-center justify-between">
-          <AppLogo />
-          <ProfileMenu />
-        </div>
-
+    <div className="h-full bg-gradient-to-br from-background to-primary_light">
+      <div className="flex min-h-full items-center justify-center px-16 py-2">
         <div className="flex gap-6">
-          <div className="w-1/2 rounded-3xl bg-background p-6">
+          <div className="w-1/2 rounded-3xl bg-background p-6 shadow-md_custom">
             <div className="mb-4 transform border-b-2 border-primary">
               <h2 className="mb-4 px-4 text-xl font-semibold">Users</h2>
               <div className="flex items-center gap-3 px-4 py-3">
@@ -167,7 +168,7 @@ export default function Page() {
                     className={`cursor-pointer rounded-lg p-4 transition-all ${
                       selectedUserId === user.id
                         ? "border-2 border-primary bg-primary_light"
-                        : "hover:bg-gray-100"
+                        : "hover:bg-primary"
                     }`}
                   >
                     <h4 className="font-semibold">{user.fullName}</h4>
@@ -181,7 +182,7 @@ export default function Page() {
           <div className="w-1/2">
             {selectedUserId && (
               <div className="flex flex-col gap-4">
-                <div className="rounded-3xl bg-background p-6">
+                <div className="rounded-3xl bg-background p-6 shadow-md_custom">
                   <h2 className="mb-4 text-xl font-semibold">Assigned Roles</h2>
                   <div className="max-h-40 min-h-40 space-y-2 overflow-y-auto">
                     {isLoadingUserRoles ? (
@@ -190,31 +191,29 @@ export default function Page() {
                       </div>
                     ) : (
                       userRoles.map((role) => (
-                        <div
+                        <button
+                          onClick={() => handleRemoveRole(role.id)}
+                          disabled={updatingRoleId === role.id}
                           key={role.id}
-                          className="flex items-center justify-between rounded-xl bg-primary_light p-3"
+                          className="flex w-full items-center justify-between rounded-xl bg-primary_light p-3 hover:bg-primary"
                         >
                           <div>
                             <h4 className="text-sm font-medium">{role.name}</h4>
                           </div>
-                          <button
-                            onClick={() => handleRemoveRole(role.id)}
-                            className="text-red-500 hover:text-red-700"
-                            disabled={updatingRoleId === role.id}
-                          >
+                          <div>
                             {updatingRoleId === role.id ? (
                               <Spinner size="24px" borderSize="3px" />
                             ) : (
-                              <FaTrashAlt className="h-4 w-4" />
+                              <FiMinus className="h-6 w-6" />
                             )}
-                          </button>
-                        </div>
+                          </div>
+                        </button>
                       ))
                     )}
                   </div>
                 </div>
 
-                <div className="rounded-3xl bg-background p-6">
+                <div className="rounded-3xl bg-background p-6 shadow-md_custom">
                   <h2 className="mb-2 text-xl font-semibold">
                     Available Roles
                   </h2>

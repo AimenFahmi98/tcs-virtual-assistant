@@ -14,13 +14,13 @@ import React from "react";
  */
 function PageYetToBeWorkedOn() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200 p-4">
-      <div className="w-full max-w-4xl rounded-xl bg-white p-8 shadow-xl md:p-12">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-primary_light p-4 text-text">
+      <div className="w-full max-w-4xl rounded-xl bg-background p-8 shadow-xl md:p-12">
         <div className="mb-8 border-l-4 border-blue-600 pl-6">
-          <h1 className="mb-2 text-3xl font-semibold text-gray-800 md:text-4xl">
+          <h1 className="mb-2 text-3xl font-semibold md:text-4xl">
             Page under development
           </h1>
-          <p className="text-lg text-gray-500">
+          <p className="text-lg text-text_light">
             This page is currently being worked on
           </p>
         </div>
@@ -28,17 +28,17 @@ function PageYetToBeWorkedOn() {
         <div className="space-y-8">
           <div className="flex items-center space-x-4">
             <div className="h-12 w-1 animate-pulse rounded-full bg-blue-600"></div>
-            <p className="text-xl font-light text-gray-700">
+            <p className="text-xl font-light text-text">
               We&apos;re actively developing new features and optimizing
               functionality 🚀✨
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-6">
-            <h2 className="mb-3 text-lg font-medium text-gray-700">
+          <div className="rounded-lg bg-background p-6">
+            <h2 className="mb-3 text-lg font-medium text-text">
               Expected Improvements
             </h2>
-            <ul className="space-y-2 text-gray-600">
+            <ul className="space-y-2 text-text_light">
               <li className="flex items-center">
                 <span className="mr-3 h-2 w-2 rounded-full bg-blue-600"></span>
                 Enhanced user interface and experience
@@ -54,7 +54,7 @@ function PageYetToBeWorkedOn() {
             </ul>
           </div>
 
-          <p className="border-t pt-6 text-sm text-gray-500">
+          <p className="border-t pt-6 text-sm text-text_light">
             We appreciate your patience during this enhancement period. For
             immediate assistance, please contact system administration.
           </p>

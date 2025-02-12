@@ -7,8 +7,8 @@ import { PiPaintBrush } from "react-icons/pi";
 
 function Layout({ children }) {
   return (
-    <div className="grid grid-cols-[auto_1fr]">
-      <Sidebar>
+    <>
+      <Sidebar className="row-span-full">
         <SettingsNav>
           <SettingsItem
             icon={<VscAccount className="h-5 w-5" />}
@@ -23,7 +23,7 @@ function Layout({ children }) {
         </SettingsNav>
       </Sidebar>
       <main>{children}</main>
-    </div>
+    </>
   );
 }
 

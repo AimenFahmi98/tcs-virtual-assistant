@@ -4,11 +4,13 @@ import Sidebar from "@/app/ui-components/Sidebar";
 import SubSettingsItem from "@/app/ui-components/SubSettingsItem";
 import { LuFiles } from "react-icons/lu";
 import { HiOutlineDatabase } from "react-icons/hi";
+import Header from "@/app/ui-components/Header";
 
 function Layout({ children }) {
   return (
-    <div className="grid grid-cols-[auto_1fr]">
-      <Sidebar>
+    <>
+      <Header />
+      <Sidebar className="row-span-full">
         <SettingsNav>
           <SettingsItem
             title={"Document Management"}
@@ -33,7 +35,7 @@ function Layout({ children }) {
         </SettingsNav>
       </Sidebar>
       <main>{children}</main>
-    </div>
+    </>
   );
 }
 

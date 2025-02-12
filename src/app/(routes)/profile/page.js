@@ -1,6 +1,6 @@
 const {
   default: PageYetToBeWorkedOn,
-} = require("@/app/ui-components/PageYetToBeWorkedOn");
+} = require("@/app/ui-components/PageUnderDevelopment.js");
 
 function page() {
   return <PageYetToBeWorkedOn />;

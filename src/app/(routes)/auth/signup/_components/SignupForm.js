@@ -33,7 +33,7 @@ export default function SignupForm() {
 
     setisLoading(true);
 
-    const response = await fetch("/api/auth/signup", {
+    const response = await fetch("/api/supabase/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ fullName, email, password }),

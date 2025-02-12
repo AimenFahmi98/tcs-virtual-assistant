@@ -1,5 +1,5 @@
 import DocumentTable from "@/app/(routes)/document-manager/document-management/my-documents/_components/DocumentTable";
-import { getAllRAGSelectedDocuments } from "@/lib/supabase";
+import { createClient } from "@/utils/supabase/server";
 
 /**
  * Retrieves all RAG selected documents from the system.
@@ -10,14 +10,22 @@ import { getAllRAGSelectedDocuments } from "@/lib/supabase";
  */
 async function getDocumentsSelectedForRAG() {
   try {
-    const response = await getAllRAGSelectedDocuments();
-    if (response.success) {
-      return response.data;
-    } else {
-      throw new Error(response.error);
-    }
+    const supabase = await createClient();
+    const { data, error } = await supabase.auth.getUser();
+    const user = data?.user || null;
+
+    const docsResponse = await fetch(
+      `http://localhost:3000/api/supabase/users/${user.id}/documents/selected-for-rag`,
+    );
+
+    const { documents } = await docsResponse.json();
+
+    return documents;
   } catch (error) {
-    console.error("Error fetching documents", error);
+    console.error(
+      "Error fetching user documents (the ones selected for RAG):",
+      error,
+    );
   }
 }
 

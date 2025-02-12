@@ -12,7 +12,7 @@ import ProfileMenu from "./ProfileMenu";
  * @component
  * @returns {JSX.Element} A header component with navigation menu items
  */
-function Header() {
+function Header({ className }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -37,7 +37,7 @@ function Header() {
   return (
     isAuthenticated && (
       <div className="col-start-2 text-text">
-        <div className="flex items-center justify-end py-1 pr-4">
+        <div className={`flex items-center justify-end py-3 pr-4 ${className}`}>
           <ProfileMenu title={email} />
         </div>
       </div>

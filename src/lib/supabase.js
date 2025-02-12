@@ -610,30 +610,6 @@ export async function getChunkByDocumentId(pineconeId) {
 }
 
 /**
- * Retrieves all documents from the database.
- * @async
- * @returns {Promise<Object>} Result object containing:
- * @returns {boolean} .success - Whether the operation was successful
- * @returns {Array|null} .data - Array of document objects if found
- * @returns {string|null} .error - Error message if any
- */
-export async function getDocuments() {
-  try {
-    const { data, error } = await supabase.from("documents").select("*");
-
-    if (error) {
-      console.error("Error fetching documents:", error.message);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data };
-  } catch (err) {
-    console.error("Unexpected error fetching documents:", err);
-    return { success: false, error: err.message };
-  }
-}
-
-/**
  * Retrieves all documents selected for RAG (Retrieval-Augmented Generation).
  * @async
  * @returns {Promise<Object>} Result object containing:

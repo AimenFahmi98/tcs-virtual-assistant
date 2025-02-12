@@ -11,6 +11,8 @@ import { createClient } from "@/utils/supabase/client";
 import { GrUserAdmin } from "react-icons/gr";
 import { TbUserShield } from "react-icons/tb";
 import { HiOutlineUser } from "react-icons/hi";
+import { FaUser } from "react-icons/fa";
+import { FaUserShield } from "react-icons/fa";
 
 function ProfileMenu({ title }) {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,7 +37,7 @@ function ProfileMenu({ title }) {
         setUser(user);
 
         // Check admin role
-        const response = await fetch(`/api/users/${user.id}/roles`);
+        const response = await fetch(`/api/supabase/users/${user.id}/roles`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -59,14 +61,12 @@ function ProfileMenu({ title }) {
       <DropDownMenu
         trigger={
           <div
-            className={`relative mx-auto flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm text-background transition-all duration-300 hover:scale-95 hover:cursor-pointer ${
-              isAdmin ? "bg-yellow-300 text-yellow-900" : "bg-secondary"
-            }`}
+            className={`relative mx-auto flex items-center justify-center gap-2 rounded-full bg-[url('/texture-08.jpg')] bg-cover bg-center px-5 py-[9px] text-sm text-text shadow-md transition-all duration-300 hover:cursor-pointer`}
           >
             {isAdmin ? (
-              <GrUserAdmin className="h-4 w-4" />
+              <FaUserShield className="h-4 w-4" />
             ) : (
-              <HiOutlineUser className="h-4 w-4" />
+              <FaUser className="h-4 w-4" />
             )}
             <span>{title || user?.email || "User"}</span>
           </div>
@@ -94,7 +94,7 @@ function ProfileMenu({ title }) {
           <Link
             href={"/document-manager/document-management/my-documents"}
             className={
-              "flex w-full items-center justify-start gap-3 rounded-lg px-4 py-3 hover:bg-primary"
+              "items-centestart flex w-full gap-3 rounded-lg px-4 py-3 hover:bg-primary"
             }
           >
             <IoDocumentsOutline className="h-5 w-5" />
@@ -104,7 +104,7 @@ function ProfileMenu({ title }) {
             <Link
               href={"/admin-settings/roles"}
               className={
-                "flex w-full items-center justify-start gap-3 rounded-lg bg-yellow-300 px-4 py-3 text-yellow-900 hover:bg-yellow-400"
+                "flex w-full items-center justify-start gap-3 rounded-lg px-4 py-3 hover:bg-primary"
               }
             >
               <TbUserShield className="h-5 w-5" />
