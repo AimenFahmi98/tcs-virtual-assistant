@@ -5,6 +5,7 @@ import { BsArrowUpCircleFill } from "react-icons/bs";
 import Spinner from "@/app/ui-components/Spinner";
 import { useChat } from "@/context/chatContext";
 import { LuAudioLines } from "react-icons/lu";
+import VoiceRecorder from "@/app/ui-components/VoiceRecorder";
 
 /**
  * A React component that renders an interactive question input box with form submission capabilities.
@@ -56,12 +57,10 @@ function QuestionBox() {
    * 5. Fetches and updates conversation title and used files
    * 6. Handles error cases and resets loading state
    */
-  async function handleSubmitQuestion(e) {
+  async function handleSubmitQuestion(question) {
+    console.log("here");
     context.setIsGeneratingAnswer(true);
-    e.preventDefault();
 
-    const question = e.target.elements.question.value.trim();
-    e.target.elements.question.value = "";
     adjustTextAreaHeight();
 
     if (!question) {
@@ -169,7 +168,12 @@ function QuestionBox() {
   return (
     <div className="flex w-[600px] items-center justify-center rounded-2xl bg-primary transition-all duration-200 ease-out focus-within:w-[650px] focus-within:shadow-lg_custom">
       <form
-        onSubmit={handleSubmitQuestion}
+        onSubmit={(e) => {
+          e.preventDefault();
+          const question = e.target.elements.question.value.trim();
+          e.target.elements.question.value = "";
+          handleSubmitQuestion(question);
+        }}
         className="flex w-full items-center justify-center gap-2"
         ref={formRef}
       >
@@ -194,9 +198,7 @@ function QuestionBox() {
             <BsArrowUpCircleFill className="h-9 w-9" />
           )}
         </button>
-        <button className="m-4">
-          <LuAudioLines className="h-7 w-7 hover:text-gray-600" />
-        </button>
+        <VoiceRecorder onTranscription={handleSubmitQuestion} />
       </form>
     </div>
   );

@@ -18,6 +18,7 @@ import Loading from "@/app/(routes)/virtual-assistant/loading";
  */
 function VirtualAssistant() {
   const context = useChat();
+  console.log(context.hasQuestions);
 
   return (
     <div className="col-span-1 col-start-2 h-[95%]">

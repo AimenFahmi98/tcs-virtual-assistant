@@ -1,32 +1,38 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react"; // Add useState
 import Question from "./Question";
 import Answer from "./Answer";
 import Spinner from "@/app/ui-components/Spinner";
 import { useChat } from "@/context/chatContext";
+import { ArrowDownward } from "@mui/icons-material";
 
-/**
- * Renders a messages container component that displays a list of questions and their corresponding answers.
- * Uses the chat context to manage the state of messages and loading status.
- *
- * @component
- * @returns {JSX.Element} Returns either a scrollable div containing Question and Answer components, or a Spinner component when loading.
- *
- * @example
- * return (
- *   <MessagesBox />
- * )
- *
- * @requires useChat - Custom hook that provides chat context
- * @requires Question - Component that renders a question
- * @requires Answer - Component that renders an answer
- * @requires Spinner - Loading indicator component
- */
 function MessagesBox() {
   const context = useChat();
+  const messagesEndRef = useRef(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Handle scroll event to show/hide button
+  const handleScroll = (e) => {
+    const element = e.target;
+    const isNotAtBottom =
+      element.scrollHeight - element.scrollTop - element.clientHeight > 100;
+    setShowScrollButton(isNotAtBottom);
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [context.questions, context.answers]);
 
   return !context.isLoading ? (
-    <div className="flex h-[730px] w-full flex-col items-center justify-start overflow-y-scroll text-sm">
+    <div
+      className="relative flex h-[730px] w-full flex-col items-center justify-start overflow-y-scroll text-sm"
+      onScroll={handleScroll}
+    >
       {context.questions.map((question) => {
         return (
           <div key={question.id}>
@@ -49,6 +55,15 @@ function MessagesBox() {
           </div>
         );
       })}
+      <div ref={messagesEndRef} />
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className="fixed bottom-0 -translate-x-1/2 -translate-y-[9rem] rounded-full border border-primary bg-background p-2 text-text shadow-lg hover:bg-primary_light"
+        >
+          <ArrowDownward />
+        </button>
+      )}
     </div>
   ) : (
     <Spinner />

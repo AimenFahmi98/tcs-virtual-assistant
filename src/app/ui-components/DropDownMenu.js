@@ -13,8 +13,8 @@ import React, { useState, useRef, useEffect } from "react";
  *   <div>Menu content</div>
  * </ClickableMenu>
  */
-function DropDownMenu({ trigger, children, width = "300px" }) {
-  const [isOpen, setIsOpen] = useState(false);
+function DropDownMenu({ trigger, children, isMenuOpen = false }) {
+  const [isOpen, setIsOpen] = useState(isMenuOpen);
   const menuRef = useRef(null);
   const triggerRef = useRef(null);
 
