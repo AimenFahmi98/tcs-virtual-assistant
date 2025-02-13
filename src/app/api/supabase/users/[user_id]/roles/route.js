@@ -14,7 +14,8 @@ export async function GET(request, { params }) {
          role_id,
          roles:role_id (
            id,
-           name
+           name,
+           description
          )
         `,
       )

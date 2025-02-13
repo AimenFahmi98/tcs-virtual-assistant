@@ -37,7 +37,7 @@ const MenuTrigger = ({ isAdmin, title, userEmail }) => (
 const MenuContent = ({ isAdmin, onLinkClicked }) => (
   <div className="flex flex-col items-center justify-start">
     <MenuLink
-      href="/profile"
+      href="/profile/account-info"
       icon={CgProfile}
       text="Profile"
       onLinkClicked={onLinkClicked}

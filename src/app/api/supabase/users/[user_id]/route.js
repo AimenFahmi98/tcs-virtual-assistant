@@ -4,13 +4,13 @@ import { NextResponse } from "next/server";
 // Get a specific user by ID
 export async function GET(request, { params }) {
   const supabase = await createClient();
-  const id = (await params).id;
+  const { user_id } = await params;
 
   try {
     const { data, error } = await supabase
       .from("user_profiles")
       .select("*")
-      .eq("id", id)
+      .eq("id", user_id)
       .single();
 
     if (error) {

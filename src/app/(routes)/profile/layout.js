@@ -4,10 +4,12 @@ import SettingsItem from "../../ui-components/SettingsItem";
 import SubSettingsItem from "@/app/ui-components/SubSettingsItem";
 import { VscAccount } from "react-icons/vsc";
 import { PiPaintBrush } from "react-icons/pi";
+import Header from "@/app/ui-components/Header";
 
 function Layout({ children }) {
   return (
     <>
+      <Header />
       <Sidebar className="row-span-full">
         <SettingsNav>
           <SettingsItem
