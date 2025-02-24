@@ -3,9 +3,9 @@
 import { useRef } from "react";
 import { BsArrowUpCircleFill } from "react-icons/bs";
 import Spinner from "@/app/ui-components/Spinner";
-import { useChat } from "@/context/chatContext";
-import { LuAudioLines } from "react-icons/lu";
 import VoiceRecorder from "@/app/ui-components/VoiceRecorder";
+import { useDispatch, useSelector } from "react-redux";
+import { submitQuestion } from "@/redux/chatSlice";
 
 /**
  * A React component that renders an interactive question input box with form submission capabilities.
@@ -36,103 +36,24 @@ import VoiceRecorder from "@/app/ui-components/VoiceRecorder";
 function QuestionBox() {
   const textAreaRef = useRef();
   const formRef = useRef();
-  const context = useChat();
+  const dispatch = useDispatch();
+  const { isGeneratingAnswer } = useSelector((state) => state.chat);
+  const { availableDocuments } = useSelector((state) => state.documents);
+  const RAGDocumentsAvailableToCurrentUser = availableDocuments.filter(
+    (doc) => doc.isSelectedForRAG === true,
+  );
+  const { currentUser: user } = useSelector((state) => state.users);
 
-  /**
-   * Handles the submission of a question in the virtual assistant interface.
-   *
-   * This async function processes the question submission, sends it to the OpenAI API,
-   * handles the streaming response, and updates the UI accordingly. It also manages
-   * conversation titles and document context tracking.
-   *
-   * @param {Event} e - The form submission event
-   * @throws {Error} When there's an issue with the API communication
-   * @async
-   *
-   * The function performs the following steps:
-   * 1. Prevents form default behavior and validates input
-   * 2. Stores the question in the context
-   * 3. Sends question to OpenAI API with relevant document context
-   * 4. Processes streaming response and updates UI
-   * 5. Fetches and updates conversation title and used files
-   * 6. Handles error cases and resets loading state
-   */
   async function handleSubmitQuestion(question) {
-    console.log("here");
-    context.setIsGeneratingAnswer(true);
+    dispatch(
+      submitQuestion({
+        userId: user.id,
+        question: question,
+        RAGDocumentsToUse: RAGDocumentsAvailableToCurrentUser,
+      }),
+    );
 
     adjustTextAreaHeight();
-
-    if (!question) {
-      context.setIsGeneratingAnswer(false);
-      return;
-    }
-
-    try {
-      const question_id = await context.storeQuestion(question);
-
-      // Fetch the answer stream and files used
-      const documentNames = context.documents.map((doc) => doc.name);
-
-      const response = await fetch("http://localhost:3000/api/openai/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          question,
-          activeConversationId: context.activeConversationId,
-          RAGDocumentNames: documentNames,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let answer = await context.createNewEmptyAnswer(question_id);
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-
-        answer.content += chunk;
-
-        context.updateAnswer(question_id, answer.id, answer.content); // Update the answer in the UI
-      }
-
-      // Fetch the new title and files used
-      const titleAndFilesUsedResponse = await fetch(
-        `http://localhost:3000/api/openai?conversationId=${context.activeConversationId}`,
-      );
-
-      if (titleAndFilesUsedResponse.ok) {
-        const { newConversationTitle, filesUsed } =
-          await titleAndFilesUsedResponse.json();
-
-        context.updateConversationTitle(
-          context.activeConversationId,
-          newConversationTitle,
-        );
-
-        // Optionally, store or process the filesUsed
-        answer.filesUsedAsContext = filesUsed;
-        context.updateAnswer(
-          question_id,
-          answer.id,
-          answer.content,
-          answer.filesUsedAsContext,
-        );
-      } else {
-        console.error("Failed to fetch new conversation title or files used.");
-      }
-    } catch (error) {
-      console.error("Error fetching OpenAI response:", error);
-    } finally {
-      context.setIsGeneratingAnswer(false);
-    }
   }
 
   /**
@@ -166,7 +87,7 @@ function QuestionBox() {
   }
 
   return (
-    <div className="flex w-[600px] items-center justify-center rounded-2xl bg-primary transition-all duration-200 ease-out focus-within:w-[650px] focus-within:shadow-lg_custom">
+    <div className="flex w-[90%] max-w-[600px] items-center justify-center rounded-2xl bg-primary transition-all duration-200 ease-out xl:focus-within:shadow-lg_custom">
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -188,11 +109,11 @@ function QuestionBox() {
           ref={textAreaRef}
         />
         <button
-          disabled={context.isGeneratingAnswer}
+          disabled={isGeneratingAnswer}
           type="submit"
           className="hover:text-gray-600"
         >
-          {context.isGeneratingAnswer ? (
+          {isGeneratingAnswer ? (
             <Spinner />
           ) : (
             <BsArrowUpCircleFill className="h-9 w-9" />

@@ -111,9 +111,6 @@ export function ChatContextProvider({ children }) {
           `/api/supabase/users/${user.id}/conversations/${activeConversationId}/questions`,
         );
         const questionsData = await questionsResponse.json();
-        console.log("User id:", user.id);
-        console.log("Active user id:", activeConversationId);
-        console.log("Questions data:", questionsData);
 
         // Set questions in state
         setQuestions(questionsData);

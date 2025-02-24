@@ -1,56 +1,51 @@
-import { useState } from "react";
-import { TbTrash } from "react-icons/tb";
-import { BiEdit } from "react-icons/bi";
-import { useChat } from "@/context/chatContext";
-import SlidingExtensionMenu from "@/app/ui-components/SlidingExtensionMenu";
+"use client";
+
+import { useDispatch, useSelector } from "react-redux";
+import MessagesBox from "./MessagesBox";
+import QuestionBox from "./QuestionInputBox";
+import VAWelcome from "./VAWelcome";
+import Loading from "@/app/(routes)/virtual-assistant/loading";
+import { useEffect } from "react";
+import { fetchQuestionsAndAnswers } from "@/redux/chatSlice";
 
 /**
- * Renders a conversation component with hover effects and sliding menu
- * @param {Object} props - Component properties
- * @param {string} props.title - Title of the conversation
- * @param {boolean} props.isActive - Whether the conversation is currently active
- * @param {Function} props.setActive - Function to set this conversation as active
- * @param {string} props.conversationId - Unique identifier for the conversation
- * @returns {JSX.Element} A conversation component with title and menu options
+ * A component that renders a virtual assistant interface.
+ * Displays a loading state when fetching questions, and either shows
+ * a messages box with conversation history or a welcome screen depending
+ * on whether there are existing questions.
+ * Also includes a question box component for user input.
+ *
+ * @component
+ * @returns {JSX.Element} A virtual assistant interface component
  */
-function Conversation({ title, isActive, setActive, conversationId }) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
-  const context = useChat();
+function Conversation() {
+  const dispatch = useDispatch();
+  const { activeConversationId, questionAnswerMap, isFetchingQuestions } =
+    useSelector((state) => state.chat);
+  const { currentUser: user } = useSelector((state) => state.users);
+  const hasQuestions = Object.keys(questionAnswerMap).length > 0;
+
+  useEffect(() => {
+    if (user && activeConversationId) {
+      dispatch(
+        fetchQuestionsAndAnswers({
+          userId: user.id,
+          conversationId: activeConversationId,
+        }),
+      );
+    }
+  }, [dispatch, activeConversationId, user]);
 
   return (
-    <div
-      className={`rounded-xl px-4 py-2 ${
-        isActive ? "bg-primary_dark" : "bg-primary"
-      } relative w-full overflow-hidden text-text hover:text-text_light`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {(isHovered || isMenuExpanded) && (
-        <SlidingExtensionMenu
-          className={
-            "absolute right-0 top-0 h-full rounded-xl bg-inherit px-3 text-text"
-          }
-          onExpand={() => setIsMenuExpanded(true)}
-          onClose={() => setIsMenuExpanded(false)}
-        >
-          <button className="rounded-xl px-2 py-2 hover:bg-primary">
-            <BiEdit className="h-5 w-5" />
-          </button>
-          <button
-            className="rounded-xl px-2 py-2 hover:bg-primary"
-            onClick={() => context.deleteConversation(conversationId)}
-          >
-            <TbTrash className="h-5 w-5 text-red-400" />
-          </button>
-        </SlidingExtensionMenu>
+    <div className="col-span-1 col-start-2 h-[95%]">
+      {isFetchingQuestions ? (
+        <Loading />
+      ) : (
+        <div className="flex h-full w-full flex-col items-center justify-center gap-8">
+          {hasQuestions ? <MessagesBox /> : <VAWelcome />}
+          <QuestionBox />
+        </div>
       )}
-      <button
-        onClick={() => setActive()}
-        className="w-full truncate text-left text-sm"
-      >
-        {title}
-      </button>
     </div>
   );
 }

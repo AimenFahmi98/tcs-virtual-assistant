@@ -13,7 +13,7 @@ import {
   toggleDocumentSelection,
   startSelectingDocuments,
   stopSelectingDocuments,
-} from "@/redux/documentSlice";
+} from "@/redux/adminSlice";
 
 function DocumentSelector() {
   const dispatch = useDispatch();
@@ -25,7 +25,7 @@ function DocumentSelector() {
     selectedDocIds,
     isFetchingDocuments,
     isSelectingDocuments,
-  } = useSelector((state) => state.documents);
+  } = useSelector((state) => state.admin);
 
   const isAllDocumentsSelected = selectedDocIds.length === documents.length;
 

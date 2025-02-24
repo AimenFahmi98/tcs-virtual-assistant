@@ -1,31 +1,24 @@
 "use client";
 
+import Sidebar from "@/app/ui-components/Sidebar";
 import { LuSearch } from "react-icons/lu";
 import { TbEdit } from "react-icons/tb";
-import { useChat } from "@/context/chatContext";
 import ConversationHistory from "./ConversationHistory";
-import Sidebar from "@/app/ui-components/Sidebar";
+import { useDispatch, useSelector } from "react-redux";
+import { createNewEmptyConversation } from "@/redux/chatSlice";
 
-/**
- * Renders a sidebar component for chat functionality
- * @component
- * @returns {JSX.Element} A sidebar containing conversation controls and history
- * @description
- * Displays a sidebar with:
- * - New conversation creation button
- * - Search button
- * - List of conversation history
- * Uses the chat context for managing conversations
- */
 function ChatSidebar() {
-  const context = useChat();
+  const dispatch = useDispatch();
+  const { currentUser: user } = useSelector((state) => state.users);
 
   return (
-    <Sidebar className={"relative row-span-full gap-8"}>
+    <Sidebar>
       <div className="flex items-center justify-end">
         <button
           className="p-3"
-          onClick={() => context.createNewEmptyConversation()}
+          onClick={() =>
+            dispatch(createNewEmptyConversation({ userId: user.id }))
+          }
         >
           <TbEdit className="h-7 w-7 text-gray-500 hover:text-text" />
         </button>

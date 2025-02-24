@@ -1,7 +1,6 @@
 import { Poppins } from "next/font/google";
 import "@/styles/globals.css";
-import { getTheme } from "@/lib/supabase";
-import Header from "./ui-components/Header";
+import ReduxProvider from "./ui-components/ReduxProvider";
 
 // Import Poppins font
 const poppins = Poppins({
@@ -15,24 +14,12 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  let themeName = "spring"; // Default theme
-  try {
-    const response = await getTheme();
-    if (response) {
-      themeName = response.data;
-    }
-  } catch (error) {
-    console.error("Error fetching theme:", error.message);
-  }
-
   return (
-    <html lang="en" data-theme={themeName}>
+    <html lang="en">
       <body
         className={`${poppins.className} bg-background text-text transition-all duration-300`}
       >
-        <div className="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr]">
-          {children}
-        </div>
+        <ReduxProvider>{children}</ReduxProvider>
       </body>
     </html>
   );

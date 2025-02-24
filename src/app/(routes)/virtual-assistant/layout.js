@@ -1,6 +1,6 @@
-import ChatSidebar from "@/app/(routes)/virtual-assistant/_components/ChatSidebar";
 import Header from "@/app/ui-components/Header";
 import { ChatContextProvider } from "@/context/chatContext";
+import ChatSidebar from "./_components/ChatSidebar";
 
 function layout({ children }) {
   return (

@@ -1,12 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { createClient } from "@/utils/supabase/client";
 
-// Async thunks
-export const fetchUser = createAsyncThunk("chat/fetchUser", async () => {
-  const supabase = createClient();
-  const response = await supabase.auth.getUser();
-  return response.data?.user;
-});
+/* CONVERSATIONS */
 
 export const fetchConversations = createAsyncThunk(
   "chat/fetchConversations",
@@ -16,6 +10,38 @@ export const fetchConversations = createAsyncThunk(
   },
 );
 
+export const createNewEmptyConversation = createAsyncThunk(
+  "chat/createNewEmptyConversation",
+  async ({ userId }) => {
+    const createConversationResponse = await fetch(
+      `/api/supabase/users/${userId}/conversations`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ title: "New Conversation" }),
+      },
+    );
+    return await createConversationResponse.json();
+  },
+);
+
+export const deleteConversation = createAsyncThunk(
+  "chat/deleteConversation",
+  async ({ userId, conversationId }) => {
+    const deleteConversationResponse = await fetch(
+      `/api/supabase/users/${userId}/conversations/${conversationId}`,
+      {
+        method: "DELETE",
+      },
+    );
+    return await deleteConversationResponse.json();
+  },
+);
+
+/* QUESTIONS AND ANSWERS */
+
 export const fetchQuestionsAndAnswers = createAsyncThunk(
   "chat/fetchQuestionsAndAnswers",
   async ({ userId, conversationId }) => {
@@ -24,94 +50,209 @@ export const fetchQuestionsAndAnswers = createAsyncThunk(
     );
     const questions = await questionsResponse.json();
 
-    const answersPromises = questions.map(async (question) => {
+    const questionAnswerMap = {};
+    for (const question of questions) {
       const answersResponse = await fetch(
         `/api/supabase/users/${userId}/conversations/${conversationId}/questions/${question.id}/answers`,
       );
-      return answersResponse.json();
-    });
+      const answers = await answersResponse.json();
+      questionAnswerMap[question.id] = {
+        question,
+        answers,
+      };
+    }
 
-    const answers = (await Promise.all(answersPromises)).flat();
-    return { questions, answers };
+    return { questionAnswerMap };
+  },
+);
+
+export const deleteQuestion = createAsyncThunk(
+  "chat/deleteQuestion",
+  async ({ userId, conversationId, questionId }) => {
+    const deleteQuestionResponse = await fetch(
+      `/api/supabase/users/${userId}/conversations/${conversationId}/questions/${questionId}`,
+      {
+        method: "DELETE",
+      },
+    );
+    return await deleteQuestionResponse.json();
+  },
+);
+
+export const submitQuestion = createAsyncThunk(
+  "chat/submitQuestion",
+  async (
+    { question, userId, RAGDocumentsToUse },
+    { rejectWithValue, getState, dispatch },
+  ) => {
+    if (!question) return rejectWithValue("No question provided");
+
+    const conversationId = getState().chat.activeConversationId;
+
+    try {
+      // Store question first
+      const questionResponse = await fetch(
+        `/api/supabase/users/${userId}/conversations/${conversationId}/questions`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: question }),
+        },
+      );
+      const newQuestion = await questionResponse.json();
+
+      // Create empty answer
+      const answerResponse = await fetch(
+        `/api/supabase/users/${userId}/conversations/${conversationId}/questions/${newQuestion.id}/answers`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: "" }),
+        },
+      );
+
+      let newAnswer = await answerResponse.json();
+
+      dispatch(addNewQuestion({ question: newQuestion, answer: newAnswer }));
+
+      // Start streaming response
+      const openaiResponse = await fetch("/api/openai/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: newQuestion.content,
+          activeConversationId: conversationId,
+          RAGDocumentNames: RAGDocumentsToUse.map((doc) => doc.name),
+        }),
+      });
+
+      if (!openaiResponse.ok)
+        throw new Error(`HTTP error! status: ${openaiResponse.status}`);
+
+      const reader = openaiResponse.body.getReader();
+      const decoder = new TextDecoder();
+      let fullAnswer = "";
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        // Decode streamed content
+        const chunk = decoder.decode(value, { stream: true });
+        fullAnswer += chunk;
+
+        // Dispatch partial answer to Redux store
+        dispatch(
+          updateAnswer({
+            questionId: newQuestion.id,
+            content: fullAnswer,
+          }),
+        );
+      }
+
+      const titleResponse = await fetch(
+        `/api/openai?conversationId=${conversationId}`,
+      );
+      if (!titleResponse.ok)
+        throw new Error("Failed to fetch conversation title");
+
+      const { newConversationTitle, filesUsed } = await titleResponse.json();
+      dispatch(setRAGFilesUsedInLastRequest(filesUsed));
+
+      const updateConversationTitleResponse = await fetch(
+        `/api/supabase/users/${userId}/conversations/${conversationId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title: newConversationTitle }),
+        },
+      );
+
+      if (!updateConversationTitleResponse.ok)
+        throw new Error("Failed to update conversation title");
+
+      dispatch(updateConversationTitle({ newTitle: newConversationTitle }));
+
+      const finalAnswer = {
+        ...newAnswer,
+        content: fullAnswer,
+        filesUsedAsContext: filesUsed,
+      };
+
+      const storeFullAnswerResponse = await fetch(
+        `/api/supabase/users/${userId}/conversations/${conversationId}/questions/${newQuestion.id}/answers/${newAnswer.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: finalAnswer.content,
+            filesUsedAsContext: finalAnswer.filesUsedAsContext,
+          }),
+        },
+      );
+
+      if (!storeFullAnswerResponse.ok)
+        throw new Error("Failed to store full answer");
+
+      return { question: newQuestion, answer: finalAnswer };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   },
 );
 
 const chatSlice = createSlice({
   name: "chat",
   initialState: {
-    user: null,
-    conversations: [],
     activeConversationId: null,
-    questions: [],
-    answers: [],
-    documents: [],
-    isLoading: false,
-    isGeneratingAnswer: false,
+    conversations: [],
     isFetchingConversations: false,
+    isCreatingNewEmptyConversation: false,
+    isDeletingConversation: false,
+    questionAnswerMap: {},
+    RAGFilesUsedInLastRequest: [],
+    aboutToDeleteQuestion: -1,
+    isGeneratingAnswer: false,
     isFetchingQuestions: false,
-    intentionToDeleteQuestion: { questionId: -1 },
-    hasQuestions: false,
+    isDeletingQuestion: false,
+    error: null,
   },
   reducers: {
     setActiveConversationId: (state, action) => {
       state.activeConversationId = action.payload;
     },
-    addConversation: (state, action) => {
-      state.conversations.push(action.payload);
-    },
     updateConversationTitle: (state, action) => {
-      const { id, title } = action.payload;
-      const conversation = state.conversations.find((c) => c.id === id);
-      if (conversation) conversation.title = title;
-    },
-    deleteConversation: (state, action) => {
-      state.conversations = state.conversations.filter(
-        (c) => c.id !== action.payload,
+      const conversation = state.conversations.find(
+        (conversation) => conversation.id === state.activeConversationId,
       );
-    },
-    addQuestion: (state, action) => {
-      state.questions.push(action.payload);
-      state.hasQuestions = true;
-    },
-    removeQuestion: (state, action) => {
-      state.questions = state.questions.filter((q) => q.id !== action.payload);
-      state.hasQuestions = state.questions.length > 0;
-    },
-    addAnswer: (state, action) => {
-      state.answers.push(action.payload);
-    },
-    updateAnswer: (state, action) => {
-      const { id, content, filesUsedAsContext } = action.payload;
-      const answer = state.answers.find((a) => a.id === id);
-      if (answer) {
-        answer.content = content;
-        answer.filesUsedAsContext = filesUsedAsContext;
+      if (conversation) {
+        conversation.title = action.payload.newTitle;
       }
     },
-    setIsGeneratingAnswer: (state, action) => {
-      state.isGeneratingAnswer = action.payload;
+    setAboutToDeleteQuestion: (state, action) => {
+      state.aboutToDeleteQuestion = action.payload;
     },
-    setIntentionToDeleteQuestion: (state, action) => {
-      state.intentionToDeleteQuestion = action.payload;
+    updateAnswer: (state, action) => {
+      if (state.questionAnswerMap[action.payload.questionId]?.answers?.[0]) {
+        state.questionAnswerMap[action.payload.questionId].answers[0].content =
+          action.payload.content;
+      }
     },
-    setDocuments: (state, action) => {
-      state.documents = action.payload;
+    setRAGFilesUsedInLastRequest: (state, action) => {
+      state.RAGFilesUsedInLastRequest = action.payload;
+    },
+    addNewQuestion: (state, action) => {
+      state.questionAnswerMap[action.payload.question.id] = {
+        question: action.payload.question,
+        answers: [action.payload.answer],
+      };
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUser.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(fetchUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload;
-      })
-      .addCase(fetchUser.rejected, (state) => {
-        state.isLoading = false;
-      })
       .addCase(fetchConversations.pending, (state) => {
         state.isFetchingConversations = true;
+        state.error = null;
       })
       .addCase(fetchConversations.fulfilled, (state, action) => {
         state.isFetchingConversations = false;
@@ -120,30 +261,90 @@ const chatSlice = createSlice({
           state.activeConversationId = action.payload[0].id;
         }
       })
+      .addCase(fetchConversations.rejected, (state, action) => {
+        state.isFetchingConversations = false;
+        state.error = action.error.message;
+      })
       .addCase(fetchQuestionsAndAnswers.pending, (state) => {
         state.isFetchingQuestions = true;
+        state.error = null;
       })
       .addCase(fetchQuestionsAndAnswers.fulfilled, (state, action) => {
         state.isFetchingQuestions = false;
-        state.questions = action.payload.questions;
-        state.answers = action.payload.answers;
-        state.hasQuestions = action.payload.questions.length > 0;
+        state.questionAnswerMap = action.payload.questionAnswerMap;
+        state.error = null;
+      })
+      .addCase(fetchQuestionsAndAnswers.rejected, (state, action) => {
+        state.isFetchingQuestions = false;
+        state.error = action.error.message;
+      })
+      .addCase(deleteConversation.pending, (state) => {
+        state.isDeletingConversation = true;
+        state.error = null;
+      })
+      .addCase(deleteConversation.fulfilled, (state, action) => {
+        state.isDeletingConversation = false;
+        state.conversations = state.conversations.filter(
+          (conversation) => conversation.id !== action.payload.id,
+        );
+        if (state.activeConversationId === action.payload.id) {
+          state.activeConversationId = state.conversations[0]?.id || null;
+        }
+      })
+      .addCase(deleteConversation.rejected, (state, action) => {
+        state.isDeletingConversation = false;
+        state.error = action.error.message;
+      })
+      .addCase(createNewEmptyConversation.pending, (state) => {
+        state.isCreatingNewEmptyConversation = true;
+        state.error = null;
+      })
+      .addCase(createNewEmptyConversation.fulfilled, (state, action) => {
+        state.isCreatingNewEmptyConversation = false;
+        state.conversations.unshift(action.payload);
+        state.activeConversationId = action.payload.id;
+      })
+      .addCase(createNewEmptyConversation.rejected, (state, action) => {
+        state.isCreatingNewEmptyConversation = false;
+        state.error = action.error.message;
+      })
+      .addCase(deleteQuestion.pending, (state) => {
+        state.isDeletingQuestion = true;
+        state.error = null;
+      })
+      .addCase(deleteQuestion.fulfilled, (state, action) => {
+        state.isDeletingQuestion = false;
+        delete state.questionAnswerMap[action.payload.id];
+      })
+      .addCase(deleteQuestion.rejected, (state, action) => {
+        state.isDeletingQuestion = false;
+        state.error = action.error.message;
+      })
+      .addCase(submitQuestion.pending, (state) => {
+        state.isGeneratingAnswer = true;
+        state.error = null;
+      })
+      .addCase(submitQuestion.fulfilled, (state, action) => {
+        state.isGeneratingAnswer = false;
+        state.questionAnswerMap[action.payload.question.id] = {
+          question: action.payload.question,
+          answers: [action.payload.answer],
+        };
+      })
+      .addCase(submitQuestion.rejected, (state, action) => {
+        state.isGeneratingAnswer = false;
+        state.error = action.error.message;
       });
   },
 });
 
 export const {
   setActiveConversationId,
-  addConversation,
-  updateConversationTitle,
-  deleteConversation,
-  addQuestion,
-  removeQuestion,
-  addAnswer,
+  setAboutToDeleteQuestion,
   updateAnswer,
-  setIsGeneratingAnswer,
-  setIntentionToDeleteQuestion,
-  setDocuments,
+  addNewQuestion,
+  updateConversationTitle,
+  setRAGFilesUsedInLastRequest,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

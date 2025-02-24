@@ -12,7 +12,7 @@ import {
   stopSelectingDocuments,
   stopSelectingRolesToBeAssigned,
   toggleAssignmentOfRole,
-} from "@/redux/documentSlice";
+} from "@/redux/adminSlice";
 
 function RoleAssigner() {
   const dispatch = useDispatch();
@@ -26,7 +26,7 @@ function RoleAssigner() {
     documentToRolesMap,
     isFetchingDocumentRoles,
     isAddingRolesToDocuments,
-  } = useSelector((state) => state.documents);
+  } = useSelector((state) => state.admin);
 
   const filteredRoles = roles.filter((role) =>
     role.name

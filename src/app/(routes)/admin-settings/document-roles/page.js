@@ -7,7 +7,7 @@ import {
   fetchDocumentRoles,
   fetchRoles,
   clearDocumentSelection,
-} from "@/redux/documentSlice";
+} from "@/redux/adminSlice";
 import DocumentSelector from "./_components/DocumentSelector";
 import RoleAssigner from "./_components/RoleRemover";
 import RoleRemover from "./_components/RoleAssigner";
@@ -15,7 +15,7 @@ import RoleRemover from "./_components/RoleAssigner";
 export default function Page() {
   const dispatch = useDispatch();
   const { documents, currentDocId, isFetchingDocuments, isFetchingRoles } =
-    useSelector((state) => state.documents);
+    useSelector((state) => state.admin);
 
   useEffect(() => {
     dispatch(fetchDocuments());

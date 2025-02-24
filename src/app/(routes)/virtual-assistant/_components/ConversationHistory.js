@@ -1,8 +1,10 @@
 "use client";
 
-import { useChat } from "@/context/chatContext";
-import Conversation from "./Conversation";
+import ConversationMenuItem from "@/app/(routes)/virtual-assistant/_components/ConversationMenuItem";
 import Loading from "@/app/(routes)/virtual-assistant/loading";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchConversations } from "@/redux/chatSlice";
+import { useEffect } from "react";
 
 /**
  * Renders a list of conversations in a scrollable container.
@@ -14,21 +16,28 @@ import Loading from "@/app/(routes)/virtual-assistant/loading";
  * @component
  */
 function ConversationHistory() {
-  const context = useChat();
+  const dispatch = useDispatch();
+  const { conversations, isFetchingConversations } = useSelector(
+    (state) => state.chat,
+  );
+  const { currentUser: user } = useSelector((state) => state.users);
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchConversations(user.id));
+    }
+  }, [dispatch, user]);
 
   return (
-    <div className="flex max-h-[70%] min-h-[70%] w-full flex-col items-start justify-start gap-4 overflow-visible px-4">
+    <div className="flex max-h-[70%] min-h-[70%] w-full flex-col items-start justify-start gap-4 overflow-auto px-4 pt-4">
       <span className="text-md font-bold text-text">Conversations</span>
-      {context.isFetchingForConversations ? (
+      {isFetchingConversations || !conversations ? (
         <Loading />
       ) : (
         <div className="flex w-full flex-col gap-2 overflow-y-scroll">
-          {context.conversations.map((conversation) => (
-            <Conversation
-              title={conversation.title}
-              isActive={conversation.id === context.activeConversationId}
-              setActive={() => context.setActiveConversationId(conversation.id)}
-              conversationId={conversation.id}
+          {conversations.map((conversation) => (
+            <ConversationMenuItem
+              conversation={conversation}
               key={conversation.id}
             />
           ))}

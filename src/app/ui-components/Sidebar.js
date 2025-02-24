@@ -14,7 +14,7 @@ import BtnOpenSidebar from "@/app/ui-components/BtnOpenSidebar";
 function Sidebar({ children, className }) {
   const [isOpen, setIsOpen] = useState(true);
   return (
-    <>
+    <div className="relative row-span-full">
       <div
         className={`flex h-screen max-h-screen flex-col justify-start overflow-y-hidden overflow-x-visible bg-primary_light transition-all duration-300 ease-out ${
           isOpen ? "w-80" : "w-0"
@@ -23,7 +23,7 @@ function Sidebar({ children, className }) {
         {isOpen && children}
       </div>
       <BtnOpenSidebar setIsOpen={setIsOpen} />
-    </>
+    </div>
   );
 }
 

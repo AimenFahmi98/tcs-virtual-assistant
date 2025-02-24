@@ -71,18 +71,20 @@ export async function DELETE(request, { params }) {
   const { user_id, conversation_id, question_id } = await params;
 
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("questions")
       .delete()
       .eq("user_id", user_id)
       .eq("conversation_id", conversation_id)
-      .eq("id", question_id);
+      .eq("id", question_id)
+      .select()
+      .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: "Question deleted successfully" });
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(
       { error: "Internal Server Error" },

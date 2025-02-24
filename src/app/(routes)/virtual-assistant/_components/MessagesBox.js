@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react"; // Add useState
 import Question from "./Question";
 import Answer from "./Answer";
 import Spinner from "@/app/ui-components/Spinner";
-import { useChat } from "@/context/chatContext";
 import { ArrowDownward } from "@mui/icons-material";
+import { useSelector } from "react-redux";
 
 function MessagesBox() {
-  const context = useChat();
+  const { questionAnswerMap, isFetchingQuestions } = useSelector(
+    (state) => state.chat,
+  );
   const messagesEndRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
@@ -26,32 +28,25 @@ function MessagesBox() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [context.questions, context.answers]);
+  }, []);
 
-  return !context.isLoading ? (
+  return !isFetchingQuestions ? (
     <div
-      className="relative flex h-[730px] w-full flex-col items-center justify-start overflow-y-scroll text-sm"
+      className="xs:h-[730px] relative flex h-full w-full flex-col items-center justify-start overflow-y-scroll text-sm"
       onScroll={handleScroll}
     >
-      {context.questions.map((question) => {
+      {Object.keys(questionAnswerMap).map((questionId) => {
         return (
-          <div key={question.id}>
-            <Question
-              handleDelete={context.deleteQuestion}
-              questionId={question.id}
-            >
-              {question.content}
+          <div key={questionId}>
+            <Question question={questionAnswerMap[questionId].question}>
+              {questionAnswerMap[questionId].question.content}
             </Question>
             <Answer
-              answer={context.answers.find((answer) => {
-                return answer.question_id === question.id;
-              })}
+              answer={questionAnswerMap[questionId].answers[0]}
               filesUsedAsContext={
-                context.answers.find((answer) => {
-                  return answer.question_id === question.id;
-                })?.filesUsedAsContext
+                questionAnswerMap[questionId].answers[0].filesUsedAsContext
               }
-            ></Answer>
+            />
           </div>
         );
       })}

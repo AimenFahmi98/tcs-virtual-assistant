@@ -11,7 +11,7 @@ import {
   startSelectingRolesToBeRemoved,
   selectAllRolesForRemoval,
   setRolesToBeRemovedSearchQuery,
-} from "@/redux/documentSlice";
+} from "@/redux/adminSlice";
 import { IoMdSearch } from "react-icons/io";
 
 function RoleRemover() {
@@ -25,7 +25,7 @@ function RoleRemover() {
     isFetchingDocumentRoles,
     isRemovingRolesFromDocuments,
     isSelectingRolesToBeRemoved,
-  } = useSelector((state) => state.documents);
+  } = useSelector((state) => state.admin);
 
   const filteredRoles =
     documentToRolesMap[currentDocId]?.length > 0

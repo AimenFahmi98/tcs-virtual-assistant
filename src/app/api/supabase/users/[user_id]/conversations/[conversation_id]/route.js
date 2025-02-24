@@ -27,6 +27,39 @@ export async function GET(request, { params }) {
   return NextResponse.json(data);
 }
 
+// Update a conversation title by ID and user_id using PATCH
+export async function PATCH(request, { params }) {
+  const supabase = await createClient();
+  const { conversation_id, user_id } = await params;
+
+  try {
+    const { title } = await request.json();
+
+    if (!title) {
+      return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .update({ title })
+      .eq("id", conversation_id)
+      .eq("user_id", user_id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
+
 // Update a conversation title by ID and user_id
 export async function PUT(request, { params }) {
   const supabase = await createClient();
@@ -69,17 +102,19 @@ export async function DELETE(request, { params }) {
   const { conversation_id, user_id } = await params;
 
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("conversations")
       .delete()
       .eq("id", conversation_id)
-      .eq("user_id", user_id);
+      .eq("user_id", user_id)
+      .select()
+      .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: "Conversation deleted successfully" });
+    return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(
       { error: "Internal Server Error" },

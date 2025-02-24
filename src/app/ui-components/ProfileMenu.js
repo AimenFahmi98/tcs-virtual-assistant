@@ -7,32 +7,60 @@ import Link from "next/link";
 import { LuSettings } from "react-icons/lu";
 import { IoDocumentsOutline } from "react-icons/io5";
 import { TbUserShield } from "react-icons/tb";
-import { FaUser } from "react-icons/fa";
-import { FaUserShield } from "react-icons/fa";
 import useAdminStatus from "@/hooks/user-management/useAdminStatus";
 import { useState } from "react";
+import { Provider, useSelector } from "react-redux";
+import { store } from "@/redux/store";
+import Image from "next/image";
 
-const MenuLink = ({ href, icon: Icon, text, onLinkClicked }) => (
-  <Link
-    href={href}
-    className="flex w-full items-center justify-start gap-3 rounded-lg px-4 py-3 hover:bg-primary"
-    onClick={onLinkClicked}
-  >
-    <Icon className="h-5 w-5" />
-    <span className="text-nowrap text-sm">{text}</span>
-  </Link>
-);
+function MenuLink({ href, icon: Icon, text, onLinkClicked }) {
+  return (
+    <Link
+      href={href}
+      className="flex w-full items-center justify-start gap-3 rounded-lg px-4 py-3 hover:bg-primary"
+      onClick={onLinkClicked}
+    >
+      <Icon className="h-5 w-5" />
+      <span className="text-nowrap text-sm">{text}</span>
+    </Link>
+  );
+}
+function MenuTrigger({ isAdmin, title, userEmail }) {
+  const { currentUser, isLoading } = useSelector((state) => state.users);
 
-const MenuTrigger = ({ isAdmin, title, userEmail }) => (
-  <div className="relative mx-auto flex items-center justify-center gap-2 rounded-full bg-[url('/texture-08.jpg')] bg-cover bg-center px-5 py-[9px] text-sm text-black shadow-md transition-all duration-300 hover:cursor-pointer">
-    {isAdmin ? (
-      <FaUserShield className="h-4 w-4" />
-    ) : (
-      <FaUser className="h-4 w-4" />
-    )}
-    <span>{title || userEmail || "User"}</span>
-  </div>
-);
+  return isLoading ? (
+    <div className="relative flex items-center justify-center gap-3 rounded-xl bg-primary p-1.5 pr-3 text-sm shadow-md transition-all duration-300">
+      <div className="max-h-[40px] min-h-[40px] min-w-[40px] max-w-[40px] animate-pulse rounded-full bg-primary_darker" />
+      <div className="flex flex-col items-start justify-center gap-2">
+        <div className="h-4 w-[100px] animate-pulse rounded-full bg-primary_darker" />
+        <div className="h-3 w-[200px] animate-pulse rounded-full bg-primary_darker" />
+      </div>
+    </div>
+  ) : (
+    currentUser && (
+      <div className="relative flex items-center justify-center gap-3 rounded-xl bg-primary p-1.5 pr-3 text-sm shadow-md transition-all duration-300 hover:cursor-pointer hover:bg-primary_light">
+        <Image
+          src={
+            currentUser.profile_picture ||
+            "https://api.dicebear.com/7.x/avataaars/svg"
+          }
+          alt="Profile"
+          width={40}
+          height={40}
+          className="rounded-full object-cover"
+        />
+        <div className="flex flex-col items-start justify-center">
+          <span className="max-w-[250px] truncate font-semibold text-text">
+            {currentUser?.fullName || "Unknown User"}
+          </span>
+          <span className="max-w-[250px] truncate text-xs text-text_light">
+            {userEmail || "No e-mail provided"}
+          </span>
+        </div>
+      </div>
+    )
+  );
+}
 
 const MenuContent = ({ isAdmin, onLinkClicked }) => (
   <div className="flex flex-col items-center justify-start">
@@ -72,20 +100,25 @@ function ProfileMenu({ title }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    isAdminFetched && (
-      <DropDownMenu
-        trigger={
-          <MenuTrigger
+    <Provider store={store}>
+      {isAdminFetched && (
+        <DropDownMenu
+          trigger={
+            <MenuTrigger
+              isAdmin={isAdmin}
+              title={title}
+              userEmail={user?.email}
+              isMenuOpen={isOpen}
+            />
+          }
+        >
+          <MenuContent
             isAdmin={isAdmin}
-            title={title}
-            userEmail={user?.email}
-            isMenuOpen={isOpen}
+            onLinkClicked={() => setIsOpen(false)}
           />
-        }
-      >
-        <MenuContent isAdmin={isAdmin} onLinkClicked={() => setIsOpen(false)} />
-      </DropDownMenu>
-    )
+        </DropDownMenu>
+      )}
+    </Provider>
   );
 }
 

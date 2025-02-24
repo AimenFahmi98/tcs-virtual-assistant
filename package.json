@@ -19,6 +19,7 @@
     "@reduxjs/toolkit": "^2.5.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
+    "daisyui": "^4.12.23",
     "date-fn": "^0.0.2",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.1.0",

@@ -1,7 +1,14 @@
-import VirtualAssistant from "@/app/(routes)/virtual-assistant/_components/VirtualAssistant";
+"use client";
+
+import { redirect } from "next/navigation";
+import { useSelector } from "react-redux";
 
 function Page() {
-  return <VirtualAssistant />;
+  const { conversations } = useSelector((state) => state.chat);
+
+  if (conversations.length > 0) {
+    redirect(`/virtual-assistant/${conversations[0].id}`);
+  }
 }
 
 export default Page;

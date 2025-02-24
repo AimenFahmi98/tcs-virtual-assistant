@@ -1,44 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import { useSelector } from "react-redux";
 import ProfileMenu from "./ProfileMenu";
 
-/**
- * Header component that displays the main navigation menu of the application.
- * Contains links to the Virtual Assistant, Document Manager, and Settings pages.
- * Uses MenuLink components to render navigation items with icons.
- * Layout is structured using CSS Grid with three columns.
- * @component
- * @returns {JSX.Element} A header component with navigation menu items
- */
 function Header({ className }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [email, setEmail] = useState("");
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        setEmail(session.user.email);
-        setIsAuthenticated(true);
-      } else {
-        setEmail("");
-        setIsAuthenticated(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const currentUser = useSelector((state) => state.users.currentUser);
 
   return (
-    isAuthenticated && (
+    currentUser && (
       <div className="col-start-2 text-text">
-        <div className={`flex items-center justify-end py-3 pr-4 ${className}`}>
-          <ProfileMenu title={email} />
+        <div
+          className={`flex items-center justify-end py-2 pr-4 ${className} `}
+        >
+          <ProfileMenu title={currentUser.email} />
         </div>
       </div>
     )

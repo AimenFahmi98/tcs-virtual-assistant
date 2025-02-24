@@ -37,10 +37,8 @@ export default function Page() {
     getRoles();
   }, []);
 
-  const filteredRoles = roles.filter(
-    (role) =>
-      role.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-      role.name !== "Admin",
+  const filteredRoles = roles.filter((role) =>
+    role.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleAddRole = async () => {

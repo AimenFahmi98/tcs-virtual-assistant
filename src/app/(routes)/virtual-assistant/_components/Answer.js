@@ -1,7 +1,7 @@
 import HtmlBox from "../../../ui-components/HtmlBox";
 import Image from "next/image";
-import { useChat } from "@/context/chatContext";
 import SourceTag from "./SourceTag";
+import { useSelector } from "react-redux";
 
 /**
  * Calculates statistics about the frequency and relevance of files in an array.
@@ -51,20 +51,24 @@ function calculateFileStatistics(fileArray) {
  */
 function Answer({ answer, filesUsedAsContext }) {
   let isRAGUsed = filesUsedAsContext && filesUsedAsContext.length !== 0;
-  const context = useChat();
+  const { aboutToDeleteQuestion, isGeneratingAnswer } = useSelector(
+    (state) => state.chat,
+  );
+  const isAboutToDelete = aboutToDeleteQuestion === answer?.question_id;
 
   return (
     <div
       className={`${
-        context.intentionToDeleteQuestion.questionId === answer?.question_id &&
-        "bg-primary_light"
+        isAboutToDelete && "bg-primary_light"
       } rounded-b-3xl px-12 pb-8 pt-2`}
     >
       <div
-        className={"relative m-auto flex w-[50%] items-center justify-center"}
+        className={
+          "xs:w-[50%] relative m-auto flex w-[80%] items-center justify-center"
+        }
       >
         <div
-          className={`relative inline-block min-w-[850px] max-w-[850px] rounded-3xl bg-primary_light p-6 ${context.isGeneratingAnswer && "animate-pulse"}`}
+          className={`xs:min-w-[850px] xs:max-w-[850px] relative inline-block max-w-full rounded-3xl bg-primary_light p-6 ${isGeneratingAnswer && "animate-pulse"}`}
         >
           <LogoIcon />
           <HtmlBox>{answer?.content}</HtmlBox>

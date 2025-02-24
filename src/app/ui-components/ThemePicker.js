@@ -1,7 +1,6 @@
 "use client";
 
-import { getTheme, replaceTheme } from "@/lib/supabase";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { IoCheckmark } from "react-icons/io5";
 
 import {
@@ -9,32 +8,8 @@ import {
   MdNightlightRound,
   MdOutlineWbTwilight,
 } from "react-icons/md";
-
-/**
- * Retrieves theme colors from CSS variables based on the specified theme.
- * @param {string} theme - The theme name to set as data-theme attribute.
- * @returns {Object} An object containing theme colors with the following properties:
- *   @property {string} primary - The primary color
- *   @property {string} primaryLight - The light variant of primary color
- *   @property {string} primaryDarker - The darker variant of primary color
- *   @property {string} accent - The accent color
- *   @property {string} background - The background color
- *   @property {string} text - The main text color
- *   @property {string} textLight - The light variant of text color
- */
-function getThemeColors(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-  const rootStyles = getComputedStyle(document.documentElement);
-  return {
-    primary: rootStyles.getPropertyValue("--color-primary").trim(),
-    primaryLight: rootStyles.getPropertyValue("--color-primary-light").trim(),
-    primaryDarker: rootStyles.getPropertyValue("--color-primary-darker").trim(),
-    accent: rootStyles.getPropertyValue("--color-accent").trim(),
-    background: rootStyles.getPropertyValue("--color-background").trim(),
-    text: rootStyles.getPropertyValue("--color-text").trim(),
-    textLight: rootStyles.getPropertyValue("--color-text-light").trim(),
-  };
-}
+import { useDispatch, useSelector } from "react-redux";
+import { setTheme, fetchTheme, updateTheme } from "@/redux/uiSlice";
 
 /**
  * Array of theme objects representing different visual modes for the application.
@@ -65,33 +40,30 @@ const themes = [
  * )
  */
 function ThemePicker() {
-  const [theme, setTheme] = useState();
-  const [themeColors, setThemeColors] = useState({});
+  const dispatch = useDispatch();
+  const { theme, themeConfigs, isFetchingCurrentTheme } = useSelector(
+    (state) => state.ui,
+  );
+  const { currentUser: user } = useSelector((state) => state.users);
 
   const switchTheme = async (themeName) => {
-    setTheme(themeName);
-    document.documentElement.setAttribute("data-theme", themeName);
-    await replaceTheme(themeName);
+    if (user) {
+      document.documentElement.setAttribute("data-theme", themeName);
+      dispatch(updateTheme({ user_id: user.id, themeName }));
+    }
   };
 
   useEffect(() => {
-    async function fetchedTheme() {
-      const response = await getTheme();
-      if (response) {
-        setTheme(response.data);
-      }
+    if (user) {
+      dispatch(fetchTheme(user.id));
     }
-    fetchedTheme();
-  }, []);
+  }, [dispatch, user]);
 
   useEffect(() => {
-    const updatedColors = {};
-    themes.forEach(({ name }) => {
-      updatedColors[name] = getThemeColors(name);
-    });
-    setThemeColors(updatedColors);
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+    if (!isFetchingCurrentTheme) {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  }, [theme, isFetchingCurrentTheme]);
 
   return (
     <div className="flex gap-8">
@@ -101,8 +73,9 @@ function ThemePicker() {
           themeName={name}
           label={label}
           Icon={Icon}
-          colors={themeColors[name]}
+          colors={themeConfigs[name]}
           isSelected={name === theme}
+          isFetchingCurrentTheme={isFetchingCurrentTheme}
           onClick={async () => await switchTheme(name)}
         />
       ))}
@@ -122,13 +95,36 @@ function ThemePicker() {
  * @param {boolean} props.isSelected - Whether this theme is currently selected
  * @returns {JSX.Element} A theme selection button component
  */
-function ThemeButton({ label, Icon, colors, onClick, isSelected }) {
+function ThemeButton({
+  label,
+  Icon,
+  colors,
+  onClick,
+  isSelected,
+  isFetchingCurrentTheme,
+}) {
   // Create an array of color values from the colors object (excluding undefined or null values)
   const colorCircles = Object.values(colors || {}).filter((color) => color);
 
+  if (isFetchingCurrentTheme) {
+    return (
+      <div className="flex animate-pulse flex-col items-center justify-center gap-4 rounded-2xl bg-primary p-6 shadow-lg">
+        <div className="flex items-center gap-3 self-start">
+          <div className="h-6 w-6 rounded-full bg-primary_light" />
+          <div className="h-4 w-40 rounded bg-primary_light" />
+        </div>
+        <div className="mt-2 flex -space-x-5">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((_, index) => (
+            <div key={index} className="h-8 w-8 rounded-full bg-primary_dark" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <button
-      className={`flex flex-col items-center justify-center gap-3 rounded-2xl p-6 shadow-xl ${isSelected && "border-4 border-primary_dark"} relative`}
+      className={`flex flex-col items-center justify-center gap-4 rounded-2xl p-6 shadow-lg ${isSelected && "border-4 border-primary_dark"} relative`}
       style={{ background: colors?.primary || "transparent" }}
       onClick={onClick}
     >
@@ -136,11 +132,11 @@ function ThemeButton({ label, Icon, colors, onClick, isSelected }) {
         <Icon className="h-6 w-6" style={{ color: colors?.text }} />
         <span style={{ color: colors?.text }}>{label}</span>
       </div>
-      <div className="mt-2 flex -space-x-4">
+      <div className="mt-2 flex -space-x-5">
         {colorCircles.map((color, index) => (
           <div
             key={index}
-            className="h-10 w-10 rounded-full border border-gray-400"
+            className="h-8 w-8 rounded-full border border-gray-400"
             style={{
               backgroundColor: color,
             }}
