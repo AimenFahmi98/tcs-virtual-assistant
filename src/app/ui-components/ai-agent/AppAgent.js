@@ -8,7 +8,7 @@ import Spinner from "../common/Spinner";
 
 function AppAgent() {
   const { currentUser: user } = useSelector((state) => state.users);
-  const { loadingStates, questions } = useSelector((state) => state.agent);
+  const { loadingStates } = useSelector((state) => state.agent);
   const dispatch = useDispatch();
 
   function onSubmitQuestion(content) {

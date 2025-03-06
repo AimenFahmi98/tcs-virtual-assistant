@@ -231,7 +231,7 @@ const chatSlice = createSlice({
     RAGFilesUsedInLastRequest: [],
     aboutToDeleteQuestion: -1,
     isGeneratingAnswer: false,
-    isFetchingQuestions: false,
+    isFetchingQuestions: true,
     questionIdBeingDeleted: -1,
     redirectPage: "",
     error: null,

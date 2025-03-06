@@ -64,7 +64,7 @@ function Page() {
             </label>
             <div>
               <h1 className="text-2xl font-bold">{currentUser?.fullName}</h1>
-              <p className="text-gray-600">{currentUser?.email}</p>
+              <p className="text-text_light">{currentUser?.email}</p>
               <p className="text-sm text-text_light">
                 Joined {formatTimeAgo(currentUser?.created_at)}
               </p>

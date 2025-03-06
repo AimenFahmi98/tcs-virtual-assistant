@@ -32,7 +32,7 @@ function ConversationMenuItem({ conversation }) {
     <div
       className={`rounded-xl px-4 py-2 ${
         isActive ? "bg-primary_dark" : "bg-primary"
-      } relative min-h-10 w-full overflow-hidden text-text hover:text-text_light ${isActive && isDeletingConversation ? "opacity-20" : ""}`}
+      } relative min-h-10 w-full overflow-hidden text-text hover:cursor-pointer hover:text-text_light ${isActive && isDeletingConversation ? "opacity-20" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => {

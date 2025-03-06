@@ -41,6 +41,7 @@ const initialState = {
   availableThemes: Object.keys(themeConfigs),
   isFetchingTheme: true,
   isUpdatingTheme: false,
+  isAgentOpen: false,
   themeConfigs,
 };
 
@@ -57,6 +58,12 @@ const uiSlice = createSlice({
     openSidebar: (state) => {
       state.isSidebarOpen = true;
     },
+    toggleIsAgentOpen: (state) => {
+      state.isAgentOpen = !state.isAgentOpen;
+    },
+    setTheme: (state, action) => {
+      state.theme = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -69,7 +76,7 @@ const uiSlice = createSlice({
           state.theme = action.payload;
         }
       })
-      .addCase(fetchTheme.rejected, (state, action) => {
+      .addCase(fetchTheme.rejected, (state) => {
         state.isFetchingTheme = false;
         state.theme = "light";
       })
@@ -89,6 +96,11 @@ const uiSlice = createSlice({
   },
 });
 
-export const { toggleSidebar, closeSidebar, openSidebar, setTheme } =
-  uiSlice.actions;
+export const {
+  toggleSidebar,
+  closeSidebar,
+  openSidebar,
+  setTheme,
+  toggleIsAgentOpen,
+} = uiSlice.actions;
 export default uiSlice.reducer;

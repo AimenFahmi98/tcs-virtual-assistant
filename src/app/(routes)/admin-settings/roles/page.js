@@ -6,84 +6,32 @@ import { GoPlus } from "react-icons/go";
 import { BiUser } from "react-icons/bi";
 import Spinner from "@/app/ui-components/common/Spinner";
 import { FaRegTrashAlt } from "react-icons/fa";
-
-async function fetchRoles() {
-  try {
-    const response = await fetch("/api/supabase/roles");
-    if (!response.ok) throw new Error("Failed to fetch roles");
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];
-  } catch (error) {
-    console.error("Error fetching roles:", error);
-    return [];
-  }
-}
+import { useDispatch, useSelector } from "react-redux";
+import { addRole, deleteRole, fetchAllRoles } from "@/redux/roleSlice";
+import { addNotification } from "@/redux/notificationSlice";
 
 export default function Page() {
-  const [roles, setRoles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleDescription, setNewRoleDescription] = useState("");
-  const [roleBeingDeleted, setRoleBeingDeleted] = useState(-1);
-  const [isFetchingData, setIsFetchingData] = useState(false);
+  const dispatch = useDispatch();
+  const { isFetchingRoles, roles, roleBeingDeleted } = useSelector(
+    (state) => state.roles,
+  );
+  const { currentUser: user } = useSelector((state) => state.users);
 
   useEffect(() => {
-    const getRoles = async () => {
-      setIsFetchingData(true);
-      const data = await fetchRoles();
-      setRoles(data);
-      setIsFetchingData(false);
-    };
-    getRoles();
-  }, []);
+    dispatch(fetchAllRoles());
+  }, [dispatch]);
 
   const filteredRoles = roles.filter((role) =>
     role.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleAddRole = async () => {
-    if (!newRoleName.trim()) return;
-
-    const response = await fetch("/api/supabase/roles", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: newRoleName,
-        description: newRoleDescription || "No description provided",
-      }),
-    });
-
-    if (response.ok) {
-      const newRole = await response.json();
-      setRoles([...roles, newRole]);
-      setNewRoleName("");
-      setNewRoleDescription("");
-    }
-  };
-
-  const handleDeleteRole = async (id) => {
-    try {
-      setRoleBeingDeleted(id);
-      const response = await fetch(`/api/supabase/roles/${id}`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        setRoles(roles.filter((role) => role.id !== id));
-      } else {
-        throw new Error("Failed to delete role");
-      }
-    } catch (error) {
-      console.error("Error deleting role:", error);
-    } finally {
-      setRoleBeingDeleted(-1);
-    }
-  };
-
   return (
     <div>
-      <div className="m-auto min-h-full max-w-7xl px-8 py-2">
-        <div className="mb-8">
+      <div className="m-auto min-h-full max-w-7xl px-8 py-8">
+        <div className="mb-4">
           <h1 className="text-3xl font-bold text-text">Role Management</h1>
         </div>
 
@@ -104,7 +52,7 @@ export default function Page() {
 
           <button
             onClick={() => document.getElementById("addRoleForm").showModal()}
-            className="flex items-center gap-2 whitespace-nowrap rounded-full bg-accent_secondary px-6 py-3 text-sm text-background transition-all hover:bg-accent_secondary_light"
+            className="flex items-center gap-2 whitespace-nowrap rounded-full bg-accent_secondary px-6 py-3 text-sm text-background transition-all hover:opacity-80"
           >
             <GoPlus className="h-4 w-4" />
             Add New Role
@@ -115,7 +63,7 @@ export default function Page() {
           className="overflow-y-auto p-2"
           style={{ maxHeight: "calc(100vh - 240px)" }}
         >
-          {isFetchingData ? (
+          {isFetchingRoles ? (
             <Spinner />
           ) : (
             <div className="space-y-2">
@@ -123,7 +71,7 @@ export default function Page() {
                 <div
                   key={role.id}
                   className={`group transform rounded-lg border-2 border-primary bg-primary_light p-4 transition-all duration-200 hover:bg-primary ${
-                    roleBeingDeleted === role.id && "bg-red-50 blur-sm"
+                    roleBeingDeleted === role.id && "opacity-50"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-4">
@@ -140,7 +88,7 @@ export default function Page() {
                     </div>
                     <button
                       disabled={roleBeingDeleted === role.id}
-                      onClick={() => handleDeleteRole(role.id)}
+                      onClick={() => dispatch(deleteRole(role.id))}
                       className="rounded-md bg-transparent p-2 opacity-0 transition-all group-hover:opacity-100"
                     >
                       <FaRegTrashAlt className="h-5 w-5 text-red-500 transition-all hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
@@ -175,7 +123,18 @@ export default function Page() {
             className="space-y-5"
             onSubmit={(e) => {
               e.preventDefault();
-              handleAddRole();
+              dispatch(
+                addRole({ name: newRoleName, description: newRoleDescription }),
+              );
+              dispatch(
+                addNotification({
+                  userId: user.id,
+                  title: "New Role",
+                  content: `'${newRoleName}' has been added as a new role.`,
+                }),
+              );
+              setNewRoleName("");
+              setNewRoleDescription("");
               document.getElementById("addRoleForm").close();
             }}
           >
@@ -195,13 +154,13 @@ export default function Page() {
             <div className="flex justify-end gap-4">
               <button
                 onClick={() => document.getElementById("addRoleForm").close()}
-                className="rounded-lg bg-gray-100 px-6 py-3 text-sm font-medium text-text transition-all hover:bg-gray-200"
+                className="rounded-lg bg-primary px-6 py-3 text-sm font-medium text-text transition-all hover:opacity-80"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="rounded-lg bg-accent_secondary px-6 py-3 text-sm font-medium text-background transition-all hover:bg-accent_secondary_light hover:shadow-lg"
+                className="rounded-lg bg-accent_secondary px-6 py-3 text-sm font-medium text-background transition-all hover:opacity-80 hover:shadow-lg"
               >
                 Add Role
               </button>

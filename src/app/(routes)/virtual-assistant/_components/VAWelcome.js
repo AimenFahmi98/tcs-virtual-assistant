@@ -9,7 +9,7 @@ import Image from "next/image";
  */
 function VAWelcome() {
   return (
-    <div className="flex w-[90%] max-w-[600px] flex-col items-center justify-center gap-4 rounded-3xl bg-primary_light px-10 pb-8 pt-4">
+    <div className="flex w-[90%] max-w-[600px] flex-col items-center justify-center gap-4 rounded-3xl bg-primary_light px-10 pb-8 pt-4 text-text">
       <div className="flex items-center justify-center">
         <Image
           src={"/tcs-logo-no-text.webp"}

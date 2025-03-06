@@ -8,6 +8,7 @@ import Loading from "@/app/(routes)/virtual-assistant/loading";
 import { useEffect } from "react";
 import { fetchQuestionsAndAnswers, setRedirectPage } from "@/redux/chatSlice";
 import { useRouter } from "next/navigation";
+import Spinner from "@/app/ui-components/common/Spinner";
 
 /**
  * A component that renders a virtual assistant interface.
@@ -56,7 +57,9 @@ function Conversation() {
   return (
     <div className="col-span-1 col-start-2 h-[95%]">
       {isFetchingQuestions ? (
-        <Loading />
+        <div className="flex h-full w-full items-center justify-center">
+          <Spinner />
+        </div>
       ) : (
         <div className="flex h-full w-full flex-col items-center justify-center gap-8">
           {hasQuestions ? <MessagesBox /> : <VAWelcome />}
