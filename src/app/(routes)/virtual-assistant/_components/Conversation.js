@@ -6,7 +6,8 @@ import QuestionBox from "./QuestionInputBox";
 import VAWelcome from "./VAWelcome";
 import Loading from "@/app/(routes)/virtual-assistant/loading";
 import { useEffect } from "react";
-import { fetchQuestionsAndAnswers } from "@/redux/chatSlice";
+import { fetchQuestionsAndAnswers, setRedirectPage } from "@/redux/chatSlice";
+import { useRouter } from "next/navigation";
 
 /**
  * A component that renders a virtual assistant interface.
@@ -20,10 +21,26 @@ import { fetchQuestionsAndAnswers } from "@/redux/chatSlice";
  */
 function Conversation() {
   const dispatch = useDispatch();
-  const { activeConversationId, questionAnswerMap, isFetchingQuestions } =
-    useSelector((state) => state.chat);
+  const {
+    activeConversationId,
+    questionAnswerMap,
+    isFetchingQuestions,
+    redirectPage,
+  } = useSelector((state) => state.chat);
   const { currentUser: user } = useSelector((state) => state.users);
   const hasQuestions = Object.keys(questionAnswerMap).length > 0;
+  const router = useRouter();
+  const isAdmin = user?.roles.some((role) => role.name === "Admin");
+
+  useEffect(() => {
+    if (redirectPage !== "") {
+      const baseUrl = "http://localhost:3000";
+      const fullPath = `${baseUrl}/${redirectPage}`;
+
+      dispatch(setRedirectPage(""));
+      router.replace(fullPath);
+    }
+  }, [redirectPage, dispatch, router, isAdmin]);
 
   useEffect(() => {
     if (user && activeConversationId) {

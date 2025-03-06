@@ -1,17 +1,20 @@
 "use client";
 
-import {
-  deleteDocumentsByIds,
-  deleteFilesFromSupabase,
-  selectDocumentsForRAG,
-  unselectDocumentsForRAG,
-} from "@/lib/supabase";
 import DocumentRow from "./DocumentRow";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BiTrash } from "react-icons/bi";
 import { IoMdCheckboxOutline } from "react-icons/io";
 import { RxCrossCircled } from "react-icons/rx";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  deleteMultipleDocuments,
+  deselectMultipleDocumentsFromRag,
+  fetchDocumentsAvailableToCurrentUser,
+  fetchRagDocumentsAvailableToCurrentUser,
+  isDeletingDocuments,
+  selectMultipleDocumentsForRag,
+} from "@/redux/documentSlice";
 
 /**
  * A component that renders a table of documents with selection and bulk operation capabilities.
@@ -40,33 +43,38 @@ import { useRouter } from "next/navigation";
  *
  * return <DocumentTable documents={documents} />;
  */
-function DocumentTable({ documents }) {
+function DocumentTable({ displayOnlyRAGDocuments = false }) {
   const [selectedDocuments, setSelectedDocuments] = useState(new Set());
-  const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
+  const {
+    isSelectingDocumentsForRAG,
+    isUnselectingDocumentsForRAG,
+    documentsBeingSelectedForRAG,
+    documentsBeingUnselectedForRAG,
+    docuementsBeingDeleted,
+    error,
+  } = useSelector((state) => state.documents);
+  const { currentUser: user } = useSelector((state) => state.users);
+  let { availableDocuments: documents, availableRAGDocuments: ragDocuments } =
+    useSelector((state) => state.documents);
 
-  /**
-   * Handles document operations asynchronously
-   * @param {Function} operation - The operation function to execute on documents
-   * @param {Array|string} ids - Document ID(s) to perform the operation on
-   * @returns {Promise<void>} A promise that resolves when the operation is complete
-   * @throws {Error} When the operation fails
-   */
-  const handleOperation = async (operation, ids) => {
-    setIsProcessing(true);
-    try {
-      await operation(ids);
-      setSelectedDocuments(new Set());
-      router.refresh();
-    } catch (error) {
-      console.error("Operation failed:", error);
-      // Add error toast notification here
-    } finally {
-      setIsProcessing(false);
+  if (displayOnlyRAGDocuments) {
+    documents = ragDocuments;
+  }
+
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchDocumentsAvailableToCurrentUser(user.id));
+      dispatch(fetchRagDocumentsAvailableToCurrentUser(user.id));
     }
-  };
-
-  async function handleSelectForRAG(ids) {}
+  }, [
+    dispatch,
+    user,
+    documentsBeingSelectedForRAG,
+    documentsBeingUnselectedForRAG,
+    docuementsBeingDeleted,
+  ]);
 
   /**
    * Toggles the selection state of a document in the selected documents Set.
@@ -105,15 +113,20 @@ function DocumentTable({ documents }) {
       {selectedDocuments.size > 0 && (
         <div className="flex items-center justify-start gap-4 bg-background">
           <button
-            disabled={isProcessing}
+            disabled={
+              isSelectingDocumentsForRAG ||
+              isUnselectingDocumentsForRAG ||
+              isDeletingDocuments
+            }
             onClick={() => {
-              const ids = Array.from(selectedDocuments).map((doc) => doc.id);
-              handleOperation(async () => {
-                await deleteDocumentsByIds(ids);
-                await deleteFilesFromSupabase(
-                  Array.from(selectedDocuments).map((doc) => doc.name),
-                );
-              }, ids);
+              const documentIds = Array.from(selectedDocuments).map(
+                (doc) => doc.id,
+              );
+              dispatch(
+                deleteMultipleDocuments({ userId: user.id, documentIds }),
+              );
+              setSelectedDocuments(new Set());
+              router.refresh();
             }}
             className="mb-2 ml-8 flex items-center justify-center rounded-lg bg-red-500 px-3 py-2 text-sm text-white"
           >
@@ -121,10 +134,21 @@ function DocumentTable({ documents }) {
             <span>Delete</span>
           </button>
           <button
-            disabled={isProcessing}
+            disabled={
+              isSelectingDocumentsForRAG || isUnselectingDocumentsForRAG
+            }
             onClick={() => {
-              const ids = Array.from(selectedDocuments).map((doc) => doc.id);
-              handleOperation(selectDocumentsForRAG, ids);
+              const documentIds = Array.from(selectedDocuments).map(
+                (doc) => doc.id,
+              );
+              dispatch(
+                selectMultipleDocumentsForRag({
+                  userId: user.id,
+                  documentIds,
+                }),
+              );
+              setSelectedDocuments(new Set());
+              router.refresh();
             }}
             className="mb-2 flex items-center justify-center rounded-lg border border-primary_dark bg-background px-3 py-2 text-sm text-text hover:bg-primary_light"
           >
@@ -132,10 +156,21 @@ function DocumentTable({ documents }) {
             <span>Select for RAG</span>
           </button>
           <button
-            disabled={isProcessing}
+            disabled={
+              isSelectingDocumentsForRAG || isUnselectingDocumentsForRAG
+            }
             onClick={() => {
-              const ids = Array.from(selectedDocuments).map((doc) => doc.id);
-              handleOperation(unselectDocumentsForRAG, ids);
+              const documentIds = Array.from(selectedDocuments).map(
+                (doc) => doc.id,
+              );
+              dispatch(
+                deselectMultipleDocumentsFromRag({
+                  userId: user.id,
+                  documentIds,
+                }),
+              );
+              setSelectedDocuments(new Set());
+              router.refresh();
             }}
             className="mb-2 flex items-center justify-center rounded-lg border border-primary_dark bg-background px-3 py-2 text-sm text-text hover:bg-primary_light"
           >
@@ -169,6 +204,9 @@ function DocumentTable({ documents }) {
                   key={doc.id}
                   toggleSelection={toggleSelection}
                   isSelected={() => isDocumentSelected(doc.id)}
+                  isSelectedForRAG={ragDocuments.some(
+                    (ragDoc) => ragDoc.id === doc.id,
+                  )}
                 />
               ))
             )}

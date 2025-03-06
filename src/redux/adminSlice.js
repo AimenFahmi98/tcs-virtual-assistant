@@ -1,12 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Async Thunks for fetching data
-export const fetchDocuments = createAsyncThunk("documents/fetch", async () => {
-  const response = await fetch("/api/supabase/documents");
-  if (!response.ok) throw new Error("Failed to fetch documents");
-  const result = await response.json();
-  return result.data || [];
-});
+export const fetchDocuments = createAsyncThunk(
+  "documents/fetch",
+  async (user_id) => {
+    const response = await fetch(`/api/supabase/users/${user_id}/documents`);
+    if (!response.ok) throw new Error("Failed to fetch documents");
+    const result = await response.json();
+    return result.documents || [];
+  },
+);
 
 export const fetchRoles = createAsyncThunk("documents/fetchRoles", async () => {
   const response = await fetch("/api/supabase/roles");
@@ -17,10 +20,12 @@ export const fetchRoles = createAsyncThunk("documents/fetchRoles", async () => {
 
 export const fetchDocumentRoles = createAsyncThunk(
   "documents/fetchDocumentRoles",
-  async (docIds, { rejectWithValue }) => {
+  async ({ user_id, docIds }, { rejectWithValue }) => {
     try {
       const promises = docIds.map(async (docId) => {
-        const response = await fetch(`/api/supabase/documents/${docId}/roles`);
+        const response = await fetch(
+          `/api/supabase/users/${user_id}/documents/${docId}/roles`,
+        );
         if (!response.ok)
           throw new Error(`Failed to fetch roles for document ${docId}`);
         const roles = await response.json();
@@ -40,7 +45,7 @@ export const fetchDocumentRoles = createAsyncThunk(
 
 export const addSelectedRolesToSelectedDocuments = createAsyncThunk(
   "documents/addSelectedRolesToSelectedDocuments",
-  async (_, { rejectWithValue, getState }) => {
+  async (user_id, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const promises = [];
@@ -57,7 +62,7 @@ export const addSelectedRolesToSelectedDocuments = createAsyncThunk(
             promises.push(
               (async () => {
                 const response = await fetch(
-                  `/api/supabase/documents/${docId}/roles`,
+                  `/api/supabase/users/${user_id}/documents/${docId}/roles`,
                   {
                     method: "POST",
                     headers: {
@@ -91,7 +96,7 @@ export const addSelectedRolesToSelectedDocuments = createAsyncThunk(
 
 export const removeSelectedRolesFromSelectedDocuments = createAsyncThunk(
   "documents/removeSelectedRolesFromSelectedDocuments",
-  async (_, { rejectWithValue, getState }) => {
+  async (user_id, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const promises = [];
@@ -106,9 +111,12 @@ export const removeSelectedRolesFromSelectedDocuments = createAsyncThunk(
           // Only create delete request if role exists for document
           if (documentRoles.some((role) => role.id === roleId)) {
             promises.push(
-              fetch(`/api/supabase/documents/${docId}/roles/${roleId}`, {
-                method: "DELETE",
-              }).then((response) => {
+              fetch(
+                `/api/supabase/users/${user_id}/documents/${docId}/roles/${roleId}`,
+                {
+                  method: "DELETE",
+                },
+              ).then((response) => {
                 if (!response.ok)
                   throw new Error(
                     `Failed to remove role ${roleId} from document ${docId}`,

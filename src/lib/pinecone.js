@@ -1,5 +1,4 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import { getChunkByDocumentId } from "./supabase";
 /**
  * Controller class for managing Pinecone vector database operations.
  * Handles initialization, storage, and querying of embeddings in namespaced collections.
@@ -85,11 +84,17 @@ class PineconeController {
    * @param {number} [topK=5] - Number of top results to return per namespace
    * @returns {Promise<Array<{fromFile: string, textChunk: string}>>} Array of objects containing matched text chunks and their source files
    */
-  async queryForEmbedding(namespaces, embedding, topK = 5) {
+  async queryForEmbedding(
+    user_id,
+    RAGDocumentIds,
+    RAGDocumentNames,
+    embedding,
+    topK = 5,
+  ) {
     const index = this.getIndex();
     let results = [];
-    for (const namespace of namespaces) {
-      const response = await index.namespace(namespace).query({
+    for (let i = 0; i < RAGDocumentIds.length; i++) {
+      const response = await index.namespace(RAGDocumentNames[i]).query({
         topK: topK,
         vector: embedding,
         includeValues: true,
@@ -98,20 +103,36 @@ class PineconeController {
       // Add each match to the results array with relevant info
       results = results.concat(
         response.matches.map((match) => ({
-          namespace,
+          namespace: RAGDocumentNames[i],
           id: match.id,
           score: match.score,
+          document_id: RAGDocumentIds[i],
         })),
       );
     }
 
     // Sort the combined results by score in descending order
     results.sort((a, b) => b.score - a.score);
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
     const chunks = await Promise.all(
       results.slice(0, topK).map(async (result) => {
-        const { success, chunk } = await getChunkByDocumentId(result.id);
-        return { fromFile: result.namespace, textChunk: chunk };
+        const getChunkResponse = await fetch(
+          `${baseUrl}/api/supabase/users/${user_id}/documents/${result.document_id}/text-chunks/${result.id}`,
+        );
+
+        if (!getChunkResponse.ok) {
+          throw new Error(
+            `Error fetching text chunk from Supabase: ${getChunkResponse.error}`,
+          );
+        }
+
+        const chunk = await getChunkResponse.json();
+
+        return {
+          fromFile: result.namespace,
+          textChunk: chunk.content,
+        };
       }),
     );
 

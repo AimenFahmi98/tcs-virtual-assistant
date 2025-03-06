@@ -1,35 +1,10 @@
 "use client";
 
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { uploadProfilePicture } from "@/redux/userSlice";
 import { formatTimeAgo } from "@/utils/common/common-utils";
-import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Image from "next/image";
-
-const testUser = {
-  profilePicture: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
-  fullName: "John Anderson",
-  email: "john.anderson@company.com",
-  createdAt: "2023-01-15T08:30:00Z",
-  roles: [
-    {
-      title: "Senior Software Engineer",
-      description:
-        "Leads development of core applications and mentors junior developers. Specializes in full-stack development with focus on scalable architecture.",
-    },
-    {
-      title: "Technical Lead",
-      description:
-        "Oversees technical direction of projects and ensures best practices are followed.",
-    },
-    {
-      title: "Scrum Master",
-      description:
-        "Facilitates agile ceremonies and removes impediments for the team.",
-    },
-  ],
-};
 
 function Page() {
   const dispatch = useDispatch();

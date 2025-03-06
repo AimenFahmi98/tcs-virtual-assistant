@@ -16,14 +16,14 @@ const controllers = new Map();
  * @param {string|number} conversationId - The ID of the conversation
  * @returns {Promise<OpenaiController>} The OpenAI controller instance
  */
-async function getOrCreateController(conversationId) {
+async function getOrCreateController(user_id, conversationId) {
   const id = String(conversationId); // Ensure the ID is a string
   if (controllers.has(id)) {
     return controllers.get(id);
   }
 
   const newController = new OpenaiController();
-  await newController.loadConversationHistory(id);
+  await newController.loadConversationHistory(user_id, id);
   controllers.set(id, newController);
   return newController;
 }
@@ -39,14 +39,23 @@ async function getOrCreateController(conversationId) {
  * @returns {Response} Streaming response with answer chunks
  */
 export async function POST(request) {
-  const { question, activeConversationId, RAGDocumentNames } =
-    await request.json();
+  const {
+    question,
+    activeConversationId,
+    RAGDocumentIds,
+    RAGDocumentNames,
+    user_id,
+  } = await request.json();
 
   const openaiController = await getOrCreateController(
+    user_id,
     String(activeConversationId),
   );
-  const answerStream = await openaiController.answer(
+
+  const { answerStream, redirectPage } = await openaiController.answer(
+    user_id,
     question,
+    RAGDocumentIds,
     RAGDocumentNames,
   );
   let fullAnswer = "";
@@ -74,6 +83,7 @@ export async function POST(request) {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
+      "X-Redirect-Page": redirectPage || "",
     },
   });
 }
@@ -90,12 +100,16 @@ export async function POST(request) {
 export async function GET(request) {
   const url = new URL(request.url);
   const conversationId = url.searchParams.get("conversationId");
+  const user_id = url.searchParams.get("userId");
 
   if (!conversationId) {
     return new Response("Missing conversationId", { status: 400 });
   }
 
-  const openaiController = await getOrCreateController(String(conversationId));
+  const openaiController = await getOrCreateController(
+    user_id,
+    String(conversationId),
+  );
   const newConversationTitle = await openaiController.generateTitle();
   const filesUsed = openaiController.getFilesUsedInLastRequest();
 

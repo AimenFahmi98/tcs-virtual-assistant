@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"; // Add useState
 import Question from "./Question";
 import Answer from "./Answer";
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { ArrowDownward } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 
@@ -32,7 +32,7 @@ function MessagesBox() {
 
   return !isFetchingQuestions ? (
     <div
-      className="xs:h-[730px] relative flex h-full w-full flex-col items-center justify-start overflow-y-scroll text-sm"
+      className="relative flex h-full w-full flex-col items-center justify-start overflow-y-scroll text-sm xs:h-[730px]"
       onScroll={handleScroll}
     >
       {Object.keys(questionAnswerMap).map((questionId) => {

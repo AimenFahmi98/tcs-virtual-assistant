@@ -1,5 +1,5 @@
 import { IoMdSearch } from "react-icons/io";
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import {
   formatFileSize,
   getFileIcon,

@@ -1,6 +1,11 @@
+"use client";
+
 import { BsFillFileEarmarkTextFill } from "react-icons/bs";
 import { FaFilePdf, FaFileWord } from "react-icons/fa";
 import { format } from "date-fns";
+import { useSelector } from "react-redux";
+import { FaCheck } from "react-icons/fa6";
+import { FaXmark } from "react-icons/fa6";
 
 /**
  * Converts a size in kilobytes to a human-readable string representation
@@ -39,7 +44,17 @@ function formatSize(sizeInKB) {
  * @param {Function} props.isSelected - Function to check if document is currently selected
  * @returns {JSX.Element} Table row component with document information and selection controls
  */
-function DocumentRow({ document, toggleSelection, isSelected }) {
+function DocumentRow({
+  document,
+  toggleSelection,
+  isSelected,
+  isSelectedForRAG,
+}) {
+  const {
+    documentsBeingSelectedForRAG,
+    documentsBeingUnselectedForRAG,
+    documentsBeingDeleted,
+  } = useSelector((state) => state.documents);
   const documentTypeIcons = new Map([
     ["pdf", <FaFilePdf className="h-5 w-5 text-red-500" key={"pdf"} />],
     ["docx", <FaFileWord className="h-5 w-5 text-blue-500" key={"docx"} />],
@@ -52,9 +67,11 @@ function DocumentRow({ document, toggleSelection, isSelected }) {
     ],
   ]);
 
+  // console.log(documentsBeingSelectedForRAG);
+
   return (
     <tr
-      className="hover:bg-primary_light"
+      className={`${documentsBeingSelectedForRAG.some((documentBeingSelectedForRAG) => documentBeingSelectedForRAG === document.id) || documentsBeingUnselectedForRAG.some((documentBeingSelectedForRAG) => documentBeingSelectedForRAG === document.id) || documentsBeingDeleted.some((documentBeingSelectedForRAG) => documentBeingSelectedForRAG === document.id) ? "opacity-20" : ""} ${isSelected() ? "bg-blue-50 hover:to-blue-50" : "hover:bg-primary_light"}`}
       onClick={() => toggleSelection(document)}
     >
       <td className="flex items-center justify-start px-6 py-4">
@@ -76,12 +93,16 @@ function DocumentRow({ document, toggleSelection, isSelected }) {
       <td className="px-6 py-4">
         <span
           className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${
-            document.isSelectedForRAG
+            isSelectedForRAG
               ? "bg-green-100 text-green-800"
               : "bg-red-100 text-red-800"
           }`}
         >
-          {document.isSelectedForRAG ? "Yes" : "No"}
+          {isSelectedForRAG ? (
+            <FaCheck className="text-green-800" />
+          ) : (
+            <FaXmark className="text-red-800" />
+          )}
         </span>
       </td>
     </tr>

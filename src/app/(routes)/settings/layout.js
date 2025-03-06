@@ -1,15 +1,14 @@
-import Sidebar from "@/app/ui-components/Sidebar";
-import SettingsNav from "../../ui-components/SettingsNav";
-import SettingsItem from "../../ui-components/SettingsItem";
-import SubSettingsItem from "@/app/ui-components/SubSettingsItem";
+import Sidebar from "@/app/ui-components/common/Sidebar";
+import SettingsNav from "../../ui-components/common/SettingsNav";
+import SettingsItem from "../../ui-components/common/SettingsItem";
+import SubSettingsItem from "@/app/ui-components/common/SubSettingsItem";
 import { VscAccount } from "react-icons/vsc";
 import { PiPaintBrush } from "react-icons/pi";
-import Header from "@/app/ui-components/Header";
+import Header from "@/app/ui-components/common/Header";
 
 function Layout({ children }) {
   return (
     <>
-      <Header />
       <Sidebar className="row-span-full">
         <SettingsNav>
           <SettingsItem
@@ -20,11 +19,6 @@ function Layout({ children }) {
               title={"Appearance"}
               href={"/settings/appearance"}
               icon={<PiPaintBrush />}
-            />
-            <SubSettingsItem
-              title={"Profile"}
-              href={"/settings/profile"}
-              icon={<VscAccount />}
             />
           </SettingsItem>
         </SettingsNav>

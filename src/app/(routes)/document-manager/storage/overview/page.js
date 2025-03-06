@@ -1,4 +1,4 @@
-import PageYetToBeWorkedOn from "@/app/ui-components/PageUnderDevelopment.js";
+import PageYetToBeWorkedOn from "@/app/ui-components/common/PageUnderDevelopment.js.js";
 
 function page() {
   return <PageYetToBeWorkedOn />;

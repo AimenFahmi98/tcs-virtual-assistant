@@ -1,4 +1,4 @@
-import HtmlBox from "../../../ui-components/HtmlBox";
+import HtmlBox from "../../../ui-components/common/HtmlBox";
 import Image from "next/image";
 import SourceTag from "./SourceTag";
 import { useSelector } from "react-redux";
@@ -51,30 +51,30 @@ function calculateFileStatistics(fileArray) {
  */
 function Answer({ answer, filesUsedAsContext }) {
   let isRAGUsed = filesUsedAsContext && filesUsedAsContext.length !== 0;
-  const { aboutToDeleteQuestion, isGeneratingAnswer } = useSelector(
-    (state) => state.chat,
-  );
+  const { aboutToDeleteQuestion, isGeneratingAnswer, questionIdBeingDeleted } =
+    useSelector((state) => state.chat);
   const isAboutToDelete = aboutToDeleteQuestion === answer?.question_id;
+  const isBeingDeleted = answer.question_id === questionIdBeingDeleted;
 
   return (
     <div
       className={`${
         isAboutToDelete && "bg-primary_light"
-      } rounded-b-3xl px-12 pb-8 pt-2`}
+      } rounded-b-3xl px-12 pb-8 pt-2 ${isBeingDeleted && "opacity-20"}`}
     >
       <div
         className={
-          "xs:w-[50%] relative m-auto flex w-[80%] items-center justify-center"
+          "relative m-auto flex w-[80%] items-center justify-center xs:w-[50%]"
         }
       >
         <div
-          className={`xs:min-w-[850px] xs:max-w-[850px] relative inline-block max-w-full rounded-3xl bg-primary_light p-6 ${isGeneratingAnswer && "animate-pulse"}`}
+          className={`relative inline-block max-w-full rounded-3xl bg-primary_light p-6 xs:min-w-[850px] xs:max-w-[850px] ${isGeneratingAnswer && "animate-pulse"}`}
         >
           <LogoIcon />
           <HtmlBox>{answer?.content}</HtmlBox>
           {isRAGUsed && (
             <div className="mt-2 inline-block max-w-full overflow-hidden rounded-xl text-left">
-              <h2 className="mb-4 text-xl font-[500]">Sources</h2>
+              <h2 className="mb-4 text-xl font-[500] text-text">Sources</h2>
               <div className="flex w-full gap-4 overflow-scroll">
                 {calculateFileStatistics(filesUsedAsContext)
                   .sort(
@@ -104,8 +104,8 @@ function LogoIcon() {
         <Image
           src={"/tcs-logo-no-text.webp"}
           alt="TCS Logo"
-          width={26}
-          height={26}
+          width={15}
+          height={15}
         />
       </div>
     </div>

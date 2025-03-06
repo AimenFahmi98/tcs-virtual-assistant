@@ -22,7 +22,6 @@
 import OpenAI from "openai";
 import { encode } from "gpt-tokenizer";
 import PineconeController from "./pinecone";
-import { getAnswers, getQuestions } from "./supabase";
 
 class OpenaiController {
   constructor(MAX_HISTORY_LENGTH = 50000, MAX_COMPLETION_TOKENS = 5000) {
@@ -35,17 +34,23 @@ class OpenaiController {
         role: "system",
         content: `You are an AI assistant for Tata Consultancy Services (TCS).
 
-        **Using the Database for Context:**
-        - When you think you need more information to answer the question, you can use the 'getAdditionalContext' tool to retrieve embedded text chunks from our vector store from various available files that can serve as context.
-        - Before calling the 'getAdditionalContext' function, look at the previous messages between you and the user and check if there isn't already enough information to answer the question. If there is, you should not call the function in the first place.
-        - Every time you use the 'getAdditionalContext' function, you should think to yourself: 'what information do I still need to be able to answer the user's initial question given the information I have gathered so far?'. Then, you should pass a new question asking for that information as an argument to the 'getAdditionalContext' function.
-        - The database currently contains information about the user's contracts and educational files.
-        - If the user asks about a change in styling, you should not use the 'getAdditionalContext' function for this.
+      **Using the Database for Context:**
+      - When you think you need more information to answer the question, you can use the 'getAdditionalContext' tool to retrieve embedded text chunks from our vector store from various available files that can serve as context.
+      - Before calling the 'getAdditionalContext' function, look at the previous messages between you and the user and check if there isn't already enough information to answer the question.
+      - When using the 'getAdditionalContext' function, create a detailed and enriched query that incorporates both the user's question and relevant context from the conversation history. The more detailed the query, the better the vector search results will be.
+      - The database currently contains information about the user's contracts and educational files.
+      - If the user asks about a change in styling, you should not use the 'getAdditionalContext' function for this.
 
-        **Purpose and Presentation:**
-        - Always present yourself as a representative of TCS.
-        - Your answers must be formatted as HTML elements that can be rendered directly in a React.js application. The answer should always start with a <div></div> element and not with '''html'''. You can use tables, forms or any other relevant HTML elements. 
-        - Do not include any css for formatting. This will be provided by the React app.
+      **Navigation Assistance:**
+      - Use the 'redirectUserToPage' tool when users want to perform actions that require navigating to specific pages (documents, rag documents, roles).
+      - For example, if a user asks "How do I upload a new document?" or "I want to manage my documents", use this tool to redirect them to the appropriate page.
+      - Do not use this tool for general questions or when the user is asking for information that can be provided directly.
+      - Do not provide the user with a link directly; instead, use the tool to redirect them to the relevant page and tell them that it may take some time to get redirected so they should wait.
+
+      **Purpose and Presentation:**
+      - Always present yourself as a representative of TCS.
+      - Your answers must be formatted as HTML elements that can be rendered directly in a React.js application. The answer should always start with a <div></div> element and not with '''html'''. You can use tables, forms or any other relevant HTML elements. 
+      - Do not include any css for formatting. This will be provided by the React app.
       `,
       },
     ];
@@ -74,7 +79,44 @@ class OpenaiController {
           },
         },
       },
+      {
+        type: "function",
+        function: {
+          name: "redirectUserToPage",
+          description: `
+        Use this function when the user needs to navigate to a specific page in the application. Currently supported pages include:
+        \n- documents: Document management page
+        \n- rag documents: RAG file management page
+        \n- roles: User roles management page
+        `,
+          parameters: {
+            type: "object",
+            properties: {
+              pageName: {
+                type: "string",
+                enum: ["documents", "rag documents", "roles"],
+                description: "The page to redirect to.",
+              },
+            },
+            required: ["pageName"],
+            additionalProperties: false,
+          },
+        },
+      },
     ];
+  }
+
+  redirectUserToPage(pageName) {
+    switch (pageName) {
+      case "documents":
+        return "document-manager/document-management/my-documents/all-documents";
+      case "rag documents":
+        return "document-manager/document-management/my-documents/rag-documents";
+      case "roles":
+        return "admin-settings/roles";
+      default:
+        return "";
+    }
   }
 
   // Function to filter and print user questions and assistant answers
@@ -85,7 +127,6 @@ class OpenaiController {
    * @returns {void}
    */
   printFilteredHistory() {
-    console.log("Filtered History:");
     this.history
       .filter(
         (message) => message.role === "user" || message.role === "assistant",
@@ -105,41 +146,54 @@ class OpenaiController {
    * Questions are mapped as "user" role and answers as "assistant" role.
    *
    * @async
-   * @param {string|number} conversationId - The unique identifier for the conversation to load
+   * @param {string} user_id - The user ID to fetch conversations for
+   * @param {string} conversation_id - The unique identifier for the conversation to load
    * @throws {Error} When there's an error fetching data from the database
    * @returns {Promise<void>}
    */
-  async loadConversationHistory(conversationId) {
+  async loadConversationHistory(user_id, conversation_id) {
     try {
-      const questionsResult = await getQuestions(conversationId);
-      const answersResult = await getAnswers(conversationId);
+      // Fetch questions for this conversation
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const questionsResponse = await fetch(
+        `${baseUrl}/api/supabase/users/${user_id}/conversations/${conversation_id}/questions`,
+      );
+      if (!questionsResponse.ok) {
+        throw new Error("Failed to fetch questions");
+      }
+      const questions = await questionsResponse.json();
 
-      if (questionsResult.success && answersResult.success) {
-        const questions = questionsResult.data;
-        const answers = answersResult.data;
-
-        // Map questions and answers into the history
-        questions.forEach((question) => {
-          this.history.push({
-            role: "user",
-            content: question.content,
-          });
-
-          const answer = answers.find((ans) => ans.questionId === question.id);
-          if (answer) {
-            this.history.push({
-              role: "assistant",
-              content: answer.content,
-            });
-          }
+      // Process each question and its corresponding answers
+      for (const question of questions) {
+        // Add question to history
+        this.history.push({
+          role: "user",
+          content: question.content,
         });
 
-        console.log("Conversation history loaded successfully.");
-      } else {
-        console.error("Failed to fetch questions or answers from Supabase.");
+        const answersResponse = await fetch(
+          `${baseUrl}/api/supabase/users/${user_id}/conversations/${conversation_id}/questions/${question.id}/answers`,
+        );
+
+        if (!answersResponse.ok) {
+          throw new Error("Failed to fetch answers");
+        }
+        const answers = await answersResponse.json();
+
+        // Add the most recent answer if it exists
+        if (answers && answers.length > 0) {
+          this.history.push({
+            role: "assistant",
+            content: answers[0].content,
+          });
+        }
       }
+
+      console.log("Conversation history loaded successfully.");
     } catch (error) {
       console.error("Error loading conversation history:", error);
+      throw error;
     }
   }
 
@@ -327,8 +381,13 @@ class OpenaiController {
    *   - context {string[]} Array of text chunks with file source information
    * @throws {Error} If embedding creation or Pinecone query fails
    */
-  async getAdditionalContext(refinedQuestion, RAGDocuments) {
-    console.log("Refined question:", refinedQuestion);
+  async getAdditionalContext(
+    user_id,
+    refinedQuestion,
+    RAGDocumentIds,
+    RAGDocumentNames,
+  ) {
+    console.log("OpenAI's question to pinecone:", refinedQuestion);
 
     const openai_result = await this.openai.embeddings.create({
       model: "text-embedding-3-small",
@@ -340,7 +399,9 @@ class OpenaiController {
     const embedding = openai_result.data[0].embedding;
 
     const results = await this.pinecone.queryForEmbedding(
-      RAGDocuments,
+      user_id,
+      RAGDocumentIds,
+      RAGDocumentNames,
       embedding,
       10,
     );
@@ -374,7 +435,7 @@ class OpenaiController {
    * where it can refine the question and gather additional context before
    * generating the final answer.
    */
-  async answer(question, RAGDocuments) {
+  async answer(user_id, question, RAGDocumentIds, RAGDocumentNames) {
     // Add the user's question to the history
     this.history.push({
       role: "user",
@@ -388,6 +449,8 @@ class OpenaiController {
     let maxNbToolCalls = 1; // Limit the number of tool calls
     let currentNbToolCalls = 0;
 
+    let redirectPage = null;
+
     while (toolCallLoop && currentNbToolCalls < maxNbToolCalls) {
       currentNbToolCalls++;
       // Make the API request to OpenAI
@@ -398,17 +461,21 @@ class OpenaiController {
         tools: this.tools,
       });
 
+      let functionName = null;
+
       if (response.choices[0].message.tool_calls) {
         const toolCall = response.choices[0].message.tool_calls[0];
-        const functionName = toolCall.function.name;
+        functionName = toolCall.function.name;
         const args = JSON.parse(toolCall.function.arguments);
 
-        refinedQuestion = args.refinedQuestion;
-
         if (functionName === "getAdditionalContext") {
+          console.log("Getting additional context...");
+          refinedQuestion = args.refinedQuestion;
           const result = await this.getAdditionalContext(
+            user_id,
             refinedQuestion,
-            RAGDocuments,
+            RAGDocumentIds,
+            RAGDocumentNames,
           );
           this.filesUsedInLastRequest.push(...result.filesUsed); // Append new files used
 
@@ -416,6 +483,10 @@ class OpenaiController {
             role: "system",
             content: `Context: ${result.context.join("\n\n")}`,
           });
+        } else if (functionName === "redirectUserToPage") {
+          console.log("Redirecting user to page...");
+          redirectPage = this.redirectUserToPage(args.pageName);
+          toolCallLoop = false;
         }
       } else {
         // Exit the loop if no tool calls are detected
@@ -435,7 +506,7 @@ class OpenaiController {
       stream: true,
     });
 
-    return answerStream;
+    return { answerStream, redirectPage };
   }
 
   /**

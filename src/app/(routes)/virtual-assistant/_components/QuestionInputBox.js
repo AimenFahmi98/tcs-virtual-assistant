@@ -2,8 +2,8 @@
 
 import { useRef } from "react";
 import { BsArrowUpCircleFill } from "react-icons/bs";
-import Spinner from "@/app/ui-components/Spinner";
-import VoiceRecorder from "@/app/ui-components/VoiceRecorder";
+import Spinner from "@/app/ui-components/common/Spinner";
+import VoiceRecorder from "@/app/ui-components/common/VoiceRecorder";
 import { useDispatch, useSelector } from "react-redux";
 import { submitQuestion } from "@/redux/chatSlice";
 
@@ -38,18 +38,16 @@ function QuestionBox() {
   const formRef = useRef();
   const dispatch = useDispatch();
   const { isGeneratingAnswer } = useSelector((state) => state.chat);
-  const { availableDocuments } = useSelector((state) => state.documents);
-  const RAGDocumentsAvailableToCurrentUser = availableDocuments.filter(
-    (doc) => doc.isSelectedForRAG === true,
-  );
+  const { availableRAGDocuments } = useSelector((state) => state.documents);
   const { currentUser: user } = useSelector((state) => state.users);
 
   async function handleSubmitQuestion(question) {
     dispatch(
       submitQuestion({
-        userId: user.id,
+        user,
         question: question,
-        RAGDocumentsToUse: RAGDocumentsAvailableToCurrentUser,
+        RAGDocumentIds: availableRAGDocuments.map((doc) => doc.id) || [],
+        RAGDocumentNames: availableRAGDocuments.map((doc) => doc.name) || [],
       }),
     );
 
@@ -116,10 +114,13 @@ function QuestionBox() {
           {isGeneratingAnswer ? (
             <Spinner />
           ) : (
-            <BsArrowUpCircleFill className="h-9 w-9" />
+            <BsArrowUpCircleFill className="h-8 w-8 text-text hover:text-text_light" />
           )}
         </button>
-        <VoiceRecorder onTranscription={handleSubmitQuestion} />
+        <VoiceRecorder
+          onTranscription={handleSubmitQuestion}
+          iconSize={"h-7 w-7"}
+        />
       </form>
     </div>
   );

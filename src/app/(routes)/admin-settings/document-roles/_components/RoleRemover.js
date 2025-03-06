@@ -1,4 +1,4 @@
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { FiMinus } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -26,6 +26,7 @@ function RoleRemover() {
     isRemovingRolesFromDocuments,
     isSelectingRolesToBeRemoved,
   } = useSelector((state) => state.admin);
+  const { currentUser: user } = useSelector((state) => state.users);
 
   const filteredRoles =
     documentToRolesMap[currentDocId]?.length > 0
@@ -47,7 +48,7 @@ function RoleRemover() {
           <button
             onClick={() => {
               !isSelectingRolesToBeRemoved
-                ? dispatch(startSelectingRolesToBeRemoved())
+                ? dispatch(startSelectingRolesToBeRemoved(user.id))
                 : dispatch(stopSelectingRolesToBeRemoved());
               dispatch(clearRoleSelectionForRemoval());
             }}
@@ -86,7 +87,7 @@ function RoleRemover() {
       {selectedDocIds.length > 0 && rolesToBeRemoved.length > 1 && (
         <button
           onClick={() => {
-            dispatch(removeSelectedRolesFromSelectedDocuments());
+            dispatch(removeSelectedRolesFromSelectedDocuments(user.id));
             dispatch(stopSelectingRolesToBeRemoved());
             dispatch(stopSelectingDocuments());
             dispatch(clearDocumentSelection());
@@ -141,7 +142,7 @@ function RoleRemover() {
                   e.stopPropagation();
                   dispatch(clearRoleSelectionForRemoval());
                   dispatch(toggleRemovalOfRole(role.id));
-                  dispatch(removeSelectedRolesFromSelectedDocuments());
+                  dispatch(removeSelectedRolesFromSelectedDocuments(user.id));
                   dispatch(clearDocumentSelection());
                   dispatch(stopSelectingRolesToBeRemoved());
                   dispatch(stopSelectingDocuments());

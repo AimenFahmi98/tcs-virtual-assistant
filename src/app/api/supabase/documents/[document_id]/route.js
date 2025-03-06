@@ -33,6 +33,31 @@ export async function DELETE(request, { params }) {
       );
     }
 
+    // Delete the file from storage
+    const { error: storageError } = await supabase.storage
+      .from("documents/uploads")
+      .remove([document.name]);
+
+    if (storageError) {
+      return NextResponse.json(
+        { success: false, message: "Error deleting file from storage" },
+        { status: 500 },
+      );
+    }
+
+    // Delete the document record from the database
+    const { error: deleteError } = await supabase
+      .from("documents")
+      .delete()
+      .eq("id", documentId);
+
+    if (deleteError) {
+      return NextResponse.json(
+        { success: false, message: "Error deleting document record" },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json(
       {
         success: true,

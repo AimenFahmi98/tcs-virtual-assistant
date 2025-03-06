@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { IoMdSearch } from "react-icons/io";
 import { GoPlus } from "react-icons/go";
 import { BiUser } from "react-icons/bi";
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { FaRegTrashAlt } from "react-icons/fa";
 
 async function fetchRoles() {
@@ -129,7 +129,7 @@ export default function Page() {
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <div className="flex items-start justify-start gap-2">
-                        <BiUser className="h-6 w-6" />
+                        <BiUser className="h-6 w-6 text-text" />
                         <h4 className="text-lg font-semibold text-text">
                           {role.name}
                         </h4>

@@ -6,39 +6,31 @@ export async function GET(request, { params }) {
   const supabase = await createClient();
 
   try {
-    // First, get all roles for the user
-    const { data: userRoles, error: userRolesError } = await supabase
-      .from("user_roles")
-      .select("role_id")
+    // Get document IDs from user_rag_files table
+    const { data: userRagFiles, error: ragFilesError } = await supabase
+      .from("user_rag_files")
+      .select("document_id")
       .eq("user_id", user_id);
 
-    if (userRolesError) {
+    if (ragFilesError) {
       return NextResponse.json(
-        { error: userRolesError.message },
+        { error: ragFilesError.message },
         { status: 500 },
       );
     }
 
-    // Extract role IDs
-    const roleIds = userRoles.map((role) => role.role_id);
-
-    if (roleIds.length === 0) {
+    if (!userRagFiles || userRagFiles.length === 0) {
       return NextResponse.json({ documents: [] });
     }
 
-    // Get all documents that have roles matching the user's roles
+    // Extract document IDs
+    const documentIds = userRagFiles.map((file) => file.document_id);
+
+    // Get the full document objects
     const { data: documents, error: documentsError } = await supabase
       .from("documents")
-      .select(
-        `
-        *,
-        document_roles!inner (
-          role_id
-        )
-      `,
-      )
-      .eq("isSelectedForRAG", true)
-      .in("document_roles.role_id", roleIds);
+      .select("*")
+      .in("id", documentIds);
 
     if (documentsError) {
       return NextResponse.json(
@@ -47,12 +39,57 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Remove duplicate documents and clean up the response
-    const uniqueDocuments = Array.from(new Set(documents.map((doc) => doc.id)))
-      .map((id) => documents.find((doc) => doc.id === id))
-      .map(({ document_roles, ...doc }) => doc); // Remove the document_roles from the response
+    return NextResponse.json({ documents });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
 
-    return NextResponse.json({ documents: uniqueDocuments });
+export async function POST(request, { params }) {
+  const { user_id } = await params;
+  const { document_id } = await request.json();
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("user_rag_files")
+      .insert([{ user_id, document_id }])
+      .select();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data });
+  } catch (error) {
+    console.error("Unexpected error:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(request, { params }) {
+  const { user_id } = await params;
+  const { document_id } = await request.json();
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("user_rag_files")
+      .delete()
+      .match({ user_id, document_id });
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, data });
   } catch (error) {
     console.error("Unexpected error:", error);
     return NextResponse.json(

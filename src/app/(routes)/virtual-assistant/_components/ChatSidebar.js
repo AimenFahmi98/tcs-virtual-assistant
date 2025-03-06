@@ -1,6 +1,6 @@
 "use client";
 
-import Sidebar from "@/app/ui-components/Sidebar";
+import Sidebar from "@/app/ui-components/common/Sidebar";
 import { LuSearch } from "react-icons/lu";
 import { TbEdit } from "react-icons/tb";
 import ConversationHistory from "./ConversationHistory";

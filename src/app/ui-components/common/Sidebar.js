@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import BtnOpenSidebar from "@/app/ui-components/BtnOpenSidebar";
+import BtnOpenSidebar from "@/app/ui-components/common/BtnOpenSidebar";
 
 /**
  * A responsive sidebar component that can be toggled open/closed.

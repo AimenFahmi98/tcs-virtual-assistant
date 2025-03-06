@@ -68,7 +68,8 @@ export const fetchQuestionsAndAnswers = createAsyncThunk(
 
 export const deleteQuestion = createAsyncThunk(
   "chat/deleteQuestion",
-  async ({ userId, conversationId, questionId }) => {
+  async ({ userId, conversationId, questionId }, { dispatch }) => {
+    dispatch(setQuestionIdBeingDeleted(questionId));
     const deleteQuestionResponse = await fetch(
       `/api/supabase/users/${userId}/conversations/${conversationId}/questions/${questionId}`,
       {
@@ -82,10 +83,13 @@ export const deleteQuestion = createAsyncThunk(
 export const submitQuestion = createAsyncThunk(
   "chat/submitQuestion",
   async (
-    { question, userId, RAGDocumentsToUse },
+    { question, user, RAGDocumentIds, RAGDocumentNames },
     { rejectWithValue, getState, dispatch },
   ) => {
     if (!question) return rejectWithValue("No question provided");
+
+    const userId = user.id;
+    const isAdmin = user.roles.some((role) => role.name === "Admin");
 
     const conversationId = getState().chat.activeConversationId;
 
@@ -120,38 +124,52 @@ export const submitQuestion = createAsyncThunk(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          user_id: userId,
           question: newQuestion.content,
           activeConversationId: conversationId,
-          RAGDocumentNames: RAGDocumentsToUse.map((doc) => doc.name),
+          RAGDocumentIds: RAGDocumentIds,
+          RAGDocumentNames: RAGDocumentNames,
         }),
       });
 
       if (!openaiResponse.ok)
         throw new Error(`HTTP error! status: ${openaiResponse.status}`);
 
+      let redirectPage = openaiResponse.headers.get("X-Redirect-Page");
       const reader = openaiResponse.body.getReader();
       const decoder = new TextDecoder();
       let fullAnswer = "";
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        // Decode streamed content
-        const chunk = decoder.decode(value, { stream: true });
-        fullAnswer += chunk;
-
-        // Dispatch partial answer to Redux store
+      if (redirectPage.includes("admin-settings") && !isAdmin) {
+        fullAnswer = "You do not have permission to access this page.";
+        redirectPage = "";
         dispatch(
           updateAnswer({
             questionId: newQuestion.id,
             content: fullAnswer,
           }),
         );
+      } else {
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          // Decode streamed content
+          const chunk = decoder.decode(value, { stream: true });
+          fullAnswer += chunk;
+
+          // Dispatch partial answer to Redux store
+          dispatch(
+            updateAnswer({
+              questionId: newQuestion.id,
+              content: fullAnswer,
+            }),
+          );
+        }
       }
 
       const titleResponse = await fetch(
-        `/api/openai?conversationId=${conversationId}`,
+        `/api/openai?conversationId=${conversationId}&userId=${userId}`,
       );
       if (!titleResponse.ok)
         throw new Error("Failed to fetch conversation title");
@@ -194,7 +212,7 @@ export const submitQuestion = createAsyncThunk(
       if (!storeFullAnswerResponse.ok)
         throw new Error("Failed to store full answer");
 
-      return { question: newQuestion, answer: finalAnswer };
+      return { question: newQuestion, answer: finalAnswer, redirectPage };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -206,7 +224,7 @@ const chatSlice = createSlice({
   initialState: {
     activeConversationId: null,
     conversations: [],
-    isFetchingConversations: false,
+    isFetchingConversations: true,
     isCreatingNewEmptyConversation: false,
     isDeletingConversation: false,
     questionAnswerMap: {},
@@ -214,7 +232,8 @@ const chatSlice = createSlice({
     aboutToDeleteQuestion: -1,
     isGeneratingAnswer: false,
     isFetchingQuestions: false,
-    isDeletingQuestion: false,
+    questionIdBeingDeleted: -1,
+    redirectPage: "",
     error: null,
   },
   reducers: {
@@ -246,6 +265,12 @@ const chatSlice = createSlice({
         question: action.payload.question,
         answers: [action.payload.answer],
       };
+    },
+    setRedirectPage: (state, action) => {
+      state.redirectPage = action.payload;
+    },
+    setQuestionIdBeingDeleted: (state, action) => {
+      state.questionIdBeingDeleted = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -309,19 +334,19 @@ const chatSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(deleteQuestion.pending, (state) => {
-        state.isDeletingQuestion = true;
         state.error = null;
       })
       .addCase(deleteQuestion.fulfilled, (state, action) => {
-        state.isDeletingQuestion = false;
+        state.questionIdBeingDeleted = -1;
         delete state.questionAnswerMap[action.payload.id];
       })
       .addCase(deleteQuestion.rejected, (state, action) => {
-        state.isDeletingQuestion = false;
+        state.questionIdBeingDeleted = -1;
         state.error = action.error.message;
       })
       .addCase(submitQuestion.pending, (state) => {
         state.isGeneratingAnswer = true;
+        state.redirectPage = "";
         state.error = null;
       })
       .addCase(submitQuestion.fulfilled, (state, action) => {
@@ -330,9 +355,13 @@ const chatSlice = createSlice({
           question: action.payload.question,
           answers: [action.payload.answer],
         };
+        if (action.payload.redirectPage) {
+          state.redirectPage = action.payload.redirectPage;
+        }
       })
       .addCase(submitQuestion.rejected, (state, action) => {
         state.isGeneratingAnswer = false;
+        state.redirectPage = "";
         state.error = action.error.message;
       });
   },
@@ -345,6 +374,8 @@ export const {
   addNewQuestion,
   updateConversationTitle,
   setRAGFilesUsedInLastRequest,
+  setRedirectPage,
+  setQuestionIdBeingDeleted,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

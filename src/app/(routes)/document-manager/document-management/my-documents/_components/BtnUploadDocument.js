@@ -4,8 +4,10 @@ import { useState } from "react";
 import { BiPlus } from "react-icons/bi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
+import { uploadDocument } from "@/redux/documentSlice";
 
 /**
  * A button component that handles document file uploads.
@@ -32,10 +34,11 @@ import { useRouter } from "next/navigation";
 function BtnUploadDocument() {
   const [isUploading, setIsUploading] = useState(false);
   const router = useRouter();
+  const { isUploadingDocument } = useSelector((state) => state.documents);
 
   const handleFileUpload = async (event) => {
-    const fileInput = event.target; // Reference to the input element
-    const file = fileInput.files[0]; // Get the first selected file
+    const fileInput = event.target;
+    const file = fileInput.files[0];
     if (!file) return;
 
     setIsUploading(true);
@@ -44,53 +47,25 @@ function BtnUploadDocument() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const rawFileUploadResponse = await fetch(
-        "http://localhost:3000/api/supabase/files/uploads",
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
+      const response = await dispatch(
+        uploadDocument({
+          user_id: userId, // You'll need to get userId from your auth context/state
+          formData,
+        }),
+      ).unwrap();
 
-      if (!rawFileUploadResponse.ok) {
-        throw new Error("Failed to upload the raw file to supabase.");
-      }
-
-      const documentUploadResponse = await fetch(
-        "http://localhost:3000/api/supabase/documents",
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
-
-      if (!documentUploadResponse.ok) {
-        throw new Error("Failed to process and upload the document.");
-      }
-
-      const result = await documentUploadResponse.json();
-
-      if (result.success) {
-        // Display success toast
-        toast.success(result.message, {
-          position: "top-right",
-        });
-        // Refresh the current route
-        router.refresh();
-      } else {
-        // Display error toast
-        toast.error(`Error: ${result.error}`, {
-          position: "top-right",
-        });
-      }
+      toast.success("Document uploaded successfully", {
+        position: "top-right",
+      });
+      router.refresh();
     } catch (error) {
-      console.error("Unexpected error during file processing/upload:", error);
-      toast.error("Unexpected error during file processing/upload.", {
+      console.error("Error uploading document:", error);
+      toast.error(error || "Failed to upload document", {
         position: "top-right",
       });
     } finally {
       setIsUploading(false);
-      fileInput.value = ""; // Clear the file input value
+      fileInput.value = "";
     }
   };
 

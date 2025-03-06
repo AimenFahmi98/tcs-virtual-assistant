@@ -1,14 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FaTrashAlt } from "react-icons/fa";
 import { IoMdSearch } from "react-icons/io";
-import { GoPlus } from "react-icons/go";
-import ProfileMenu from "@/app/ui-components/ProfileMenu";
-import Spinner from "@/app/ui-components/Spinner";
-import Image from "next/image";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { FiMinus, FiPlus } from "react-icons/fi";
-import AppLogo from "@/app/ui-components/AppLogo";
 
 export default function Page() {
   const [users, setUsers] = useState([]);
@@ -139,7 +134,7 @@ export default function Page() {
   };
 
   return (
-    <div className="h-full bg-gradient-to-br from-background to-primary_light">
+    <div className="h-full bg-gradient-to-br from-background to-primary_light text-text">
       <div className="flex min-h-full items-center justify-center px-16 py-2">
         <div className="flex gap-6">
           <div className="w-1/2 rounded-3xl bg-background p-6 shadow-md_custom">

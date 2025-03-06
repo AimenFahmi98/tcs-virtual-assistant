@@ -1,15 +1,13 @@
-import SettingsItem from "@/app/ui-components/SettingsItem";
-import SettingsNav from "@/app/ui-components/SettingsNav";
-import Sidebar from "@/app/ui-components/Sidebar";
-import SubSettingsItem from "@/app/ui-components/SubSettingsItem";
+import SettingsItem from "@/app/ui-components/common/SettingsItem";
+import SettingsNav from "@/app/ui-components/common/SettingsNav";
+import Sidebar from "@/app/ui-components/common/Sidebar";
+import SubSettingsItem from "@/app/ui-components/common/SubSettingsItem";
 import { LuFiles } from "react-icons/lu";
 import { HiOutlineDatabase } from "react-icons/hi";
-import Header from "@/app/ui-components/Header";
 
 function Layout({ children }) {
   return (
     <>
-      <Header />
       <Sidebar className="row-span-full">
         <SettingsNav>
           <SettingsItem

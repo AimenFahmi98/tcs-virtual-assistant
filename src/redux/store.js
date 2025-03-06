@@ -5,6 +5,7 @@ import userReducer from "./userSlice";
 import uiReducer from "./uiSlice";
 import chatSlice from "./chatSlice";
 import documentReducer from "./documentSlice";
+import agentSlice from "./agentSlice";
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ export const store = configureStore({
     ui: uiReducer,
     chat: chatSlice,
     documents: documentReducer,
+    agent: agentSlice,
   },
   devTools: process.env.NODE_ENV !== "production", // ✅ Enable DevTools only in development
 });

@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { TbTrash } from "react-icons/tb";
 import { BiEdit } from "react-icons/bi";
-import SlidingExtensionMenu from "@/app/ui-components/SlidingExtensionMenu";
+import SlidingExtensionMenu from "@/app/ui-components/common/SlidingExtensionMenu";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteConversation, setActiveConversationId } from "@/redux/chatSlice";
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { redirect } from "next/navigation";
 
 /**
@@ -35,8 +35,12 @@ function ConversationMenuItem({ conversation }) {
       } relative min-h-10 w-full overflow-hidden text-text hover:text-text_light ${isActive && isDeletingConversation ? "opacity-20" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={() => {
+        dispatch(setActiveConversationId(conversation.id));
+        redirect(`/virtual-assistant/${conversation.id}`);
+      }}
     >
-      {(isHovered || isMenuExpanded) && (
+      {(isHovered || isMenuExpanded || isActive) && (
         <SlidingExtensionMenu
           className={
             "absolute right-0 top-0 h-full rounded-xl bg-inherit px-3 text-text"
@@ -62,13 +66,7 @@ function ConversationMenuItem({ conversation }) {
           </button>
         </SlidingExtensionMenu>
       )}
-      <button
-        onClick={() => {
-          dispatch(setActiveConversationId(conversation.id));
-          redirect(`/virtual-assistant/${conversation.id}`);
-        }}
-        className="w-full truncate text-left text-sm"
-      >
+      <button className="w-full truncate text-left text-sm">
         {conversation.title}
       </button>
     </div>

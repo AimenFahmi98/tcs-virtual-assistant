@@ -1,5 +1,19 @@
 import { createClient } from "@/utils/supabase/server";
+import PineconeController from "@/lib/pinecone";
+import OpenaiController from "@/lib/openai";
 import { NextResponse } from "next/server";
+import { processDocument } from "@/utils/document-management/processing/simpleProcessing";
+
+/**
+ * @constant {OpenaiController} openai
+ * Instance of OpenaiController used for handling OpenAI API operations
+ */
+const openai = new OpenaiController();
+/**
+ * @constant {PineconeController} pinecone - Instance of PineconeController class
+ * responsible for managing interactions with the Pinecone vector database service.
+ */
+const pinecone = new PineconeController();
 
 export async function GET(request, { params }) {
   const { user_id } = await params;
@@ -56,6 +70,117 @@ export async function GET(request, { params }) {
     console.error("Unexpected error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
+      { status: 500 },
+    );
+  }
+}
+
+/**
+ * Handles POST requests for document processing and storage.
+ * This function processes uploaded files by:
+ * 1. Validating and uploading the file to Supabase storage
+ * 2. Processing the document to extract chunks and metadata
+ * 3. Storing document metadata in Supabase
+ * 4. Generating embeddings using OpenAI
+ * 5. Storing embeddings in Pinecone
+ * 6. Storing document chunks in Supabase
+ *
+ * @async
+ * @param {Request} request - The incoming HTTP request containing form data with a file
+ * @returns {Promise<Response>} JSON response indicating success or failure
+ *   - success: true/false
+ *   - message: Status message
+ *   - status: 200 for success, 400 for invalid input, 500 for server errors
+ * @throws {Error} When file processing, upload, or storage operations fail
+ */
+export async function POST(request) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get("file");
+
+    if (!file || !(file instanceof Blob)) {
+      return NextResponse.json(
+        { success: false, message: "No valid file provided." },
+        { status: 400 },
+      );
+    }
+
+    const { chunks, metadata } = await processDocument(file, file.name);
+
+    // Create document record in database
+    const { data: documentData, error: dbError } = await supabase
+      .from("documents")
+      .insert([
+        {
+          name: metadata.fileName,
+          size: metadata.fileSize,
+          type: metadata.fileType,
+          path: supabaseUploadFileResponse.path,
+          nbChunks: metadata.numChunks,
+        },
+      ])
+      .select()
+      .single();
+
+    if (dbError) {
+      // Cleanup: delete file from storage if database insert fails
+      await supabase.storage.from("documents").remove([filePath]);
+      return NextResponse.json(
+        { success: false, message: "Error creating document record" },
+        { status: 500 },
+      );
+    }
+
+    const documentId = documentData.data.id;
+
+    // Generate and store embeddings in Pinecone
+    const embeddings = await openai.generateOpenAIEmbeddings(
+      chunks,
+      metadata.fileName,
+    );
+
+    await pinecone.storeEmbeddings(embeddings, metadata.fileName);
+
+    const chunksToStore = embeddings.map((embedding) => ({
+      id: embedding.id,
+      documentId,
+      content: embedding.chunk,
+    }));
+
+    // Store chunks in Supabase using the POST endpoint
+    const response = await fetch(
+      `/api/supabase/users/${user_id}/documents/${documentId}/text-chunks`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          chunksToStore.map((chunk) => ({
+            pineconeId: `${chunk.documentId}_${chunk.id}`,
+            content: chunk.content,
+            document_id: chunk.documentId,
+          })),
+        ),
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(`Error storing chunks in Supabase: ${error.error}`);
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Document processed and uploaded successfully.",
+      },
+      { status: 200 },
+    );
+  } catch (error) {
+    console.error("Error processing document:", error);
+    return NextResponse.json(
+      { success: false, message: error.message },
       { status: 500 },
     );
   }

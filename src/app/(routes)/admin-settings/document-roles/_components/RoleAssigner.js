@@ -1,4 +1,4 @@
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { FiPlus } from "react-icons/fi";
 import { IoMdSearch } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,6 +27,7 @@ function RoleAssigner() {
     isFetchingDocumentRoles,
     isAddingRolesToDocuments,
   } = useSelector((state) => state.admin);
+  const { currentUser: user } = useSelector((state) => state.users);
 
   const filteredRoles = roles.filter((role) =>
     role.name
@@ -91,7 +92,7 @@ function RoleAssigner() {
         {selectedDocIds.length > 0 && rolesToBeAssigned.length > 1 && (
           <button
             onClick={() => {
-              dispatch(addSelectedRolesToSelectedDocuments());
+              dispatch(addSelectedRolesToSelectedDocuments(user.id));
               dispatch(stopSelectingRolesToBeAssigned());
               dispatch(stopSelectingDocuments());
               dispatch(clearDocumentSelection());

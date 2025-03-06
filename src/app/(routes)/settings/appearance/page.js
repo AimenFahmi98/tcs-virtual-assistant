@@ -1,4 +1,4 @@
-import ThemePicker from "@/app/ui-components/ThemePicker";
+import ThemePicker from "@/app/ui-components/common/ThemePicker";
 
 function page() {
   return (

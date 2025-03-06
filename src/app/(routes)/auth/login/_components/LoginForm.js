@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Spinner from "@/app/ui-components/Spinner";
+import Spinner from "@/app/ui-components/common/Spinner";
 import { toast, ToastContainer } from "react-toastify";
 import Image from "next/image";
 
