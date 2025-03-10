@@ -5,6 +5,8 @@ const initialState = {
   isFetchingNotifications: true,
   isAddingNotification: false,
   isUpdatingNotification: false,
+  notificationBeingUpdated: -1,
+  notificationBeingDeleted: -1,
   isDeletingNotification: false,
   error: null,
 };
@@ -40,6 +42,48 @@ export const addNotification = createAsyncThunk(
   },
 );
 
+// Mark a notification as read in the database
+export const markNotificationAsReadInDB = createAsyncThunk(
+  "notifications/markNotificationAsReadInDB",
+  async ({ userId, notificationId }, { dispatch }) => {
+    dispatch(setNotificationBeingUpdated(notificationId));
+    const response = await fetch(
+      `/api/supabase/users/${userId}/notifications/${notificationId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isRead: true }),
+      },
+    );
+    dispatch(markNotificationAsRead(notificationId));
+    const data = await response.json();
+    return data;
+  },
+);
+
+// Mark a notification as unread in the database
+export const markNotificationAsUnreadInDB = createAsyncThunk(
+  "notifications/markNotificationAsUnreadInDB",
+  async ({ userId, notificationId }, { dispatch }) => {
+    dispatch(setNotificationBeingUpdated(notificationId));
+    const response = await fetch(
+      `/api/supabase/users/${userId}/notifications/${notificationId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isRead: false }),
+      },
+    );
+    dispatch(markNotificationAsUnread(notificationId));
+    const data = await response.json();
+    return data;
+  },
+);
+
 // Update an existing notification
 export const updateNotification = createAsyncThunk(
   "notifications/updateNotification",
@@ -62,7 +106,8 @@ export const updateNotification = createAsyncThunk(
 // Delete a notification
 export const deleteNotification = createAsyncThunk(
   "notifications/deleteNotification",
-  async ({ userId, notificationId }) => {
+  async ({ userId, notificationId }, { dispatch }) => {
+    dispatch(setNotificationBeingDeleted(notificationId));
     await fetch(
       `/api/supabase/users/${userId}/notifications/${notificationId}`,
       {
@@ -86,6 +131,21 @@ const notificationSlice = createSlice({
       if (notification) {
         notification.isRead = true;
       }
+    },
+    markNotificationAsUnread: (state, action) => {
+      const notificationId = action.payload;
+      const notification = state.notifications.find(
+        (notification) => notification.id === notificationId,
+      );
+      if (notification) {
+        notification.isRead = false;
+      }
+    },
+    setNotificationBeingUpdated: (state, action) => {
+      state.notificationBeingUpdated = action.payload;
+    },
+    setNotificationBeingDeleted: (state, action) => {
+      state.notificationBeingDeleted = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -138,6 +198,7 @@ const notificationSlice = createSlice({
       })
       .addCase(deleteNotification.fulfilled, (state, action) => {
         state.isDeletingNotification = false;
+        state.notificationBeingDeleted = -1;
         const notificationId = action.payload;
         state.notifications = state.notifications.filter(
           (notification) => notification.id !== notificationId,
@@ -145,11 +206,43 @@ const notificationSlice = createSlice({
       })
       .addCase(deleteNotification.rejected, (state, action) => {
         state.isDeletingNotification = false;
+        state.notificationBeingDeleted = -1;
         state.error = action.error.message;
+      })
+      .addCase(markNotificationAsReadInDB.pending, (state) => {
+        state.isUpdatingReadStatus = true;
+        state.error = null;
+      })
+      .addCase(markNotificationAsReadInDB.fulfilled, (state, action) => {
+        state.isUpdatingReadStatus = false;
+        state.notificationBeingUpdated = -1;
+      })
+      .addCase(markNotificationAsReadInDB.rejected, (state, action) => {
+        state.isUpdatingReadStatus = false;
+        state.error = action.error.message;
+        state.notificationBeingUpdated = -1;
+      })
+      .addCase(markNotificationAsUnreadInDB.pending, (state) => {
+        state.isUpdatingReadStatus = true;
+        state.error = null;
+      })
+      .addCase(markNotificationAsUnreadInDB.fulfilled, (state, action) => {
+        state.isUpdatingReadStatus = false;
+        state.notificationBeingUpdated = -1;
+      })
+      .addCase(markNotificationAsUnreadInDB.rejected, (state, action) => {
+        state.isUpdatingReadStatus = false;
+        state.error = action.error.message;
+        state.notificationBeingUpdated = -1;
       });
   },
 });
 
-export const { markNotificationAsRead } = notificationSlice.actions;
+export const {
+  markNotificationAsRead,
+  markNotificationAsUnread,
+  setNotificationBeingUpdated,
+  setNotificationBeingDeleted,
+} = notificationSlice.actions;
 
 export default notificationSlice.reducer;

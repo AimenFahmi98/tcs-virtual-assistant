@@ -8,9 +8,9 @@ import {
   fetchDocumentsAvailableToCurrentUser,
   fetchRagDocumentsAvailableToCurrentUser,
 } from "@/redux/documentSlice";
-import Header from "./Header";
+import Header from "../header/Header";
 import Modal from "./Modal";
-import AppAgent from "../ai-agent/AppAgent";
+import AppAgent from "../header/app-agent/AppAgent";
 import { loadAppAgentConversation, setRedirectPage } from "@/redux/agentSlice";
 import { useRouter } from "next/navigation";
 import { fetchNotifications } from "@/redux/notificationSlice";
@@ -56,7 +56,9 @@ function BaseLayout({ children }) {
       <Modal
         isOpen={isAgentOpen}
         onClose={() => dispatch(toggleIsAgentOpen())}
-        className={"h-[80%] w-[95%] max-w-xl xs:w-[95%]"}
+        className={
+          "h-[80%] w-[95%] max-w-xl rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 p-1 xs:w-[95%]"
+        }
       >
         <AppAgent />
       </Modal>

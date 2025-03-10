@@ -58,22 +58,21 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE - Delete a question
-export async function DELETE(request, { params }) {
+// DELETE - Delete all questions for a user
+export async function DELETE(_request, { params }) {
   try {
     const supabase = await createClient();
     const { user_id } = await params;
-    const { searchParams } = new URL(request.url);
-    const question_id = searchParams.get("question_id");
 
     const { error } = await supabase
       .from("agent_questions")
       .delete()
-      .eq("question_id", question_id)
       .eq("user_id", user_id);
 
     if (error) throw error;
-    return NextResponse.json({ message: "Question deleted successfully" });
+    return NextResponse.json({
+      message: "All questions deleted successfully for user",
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

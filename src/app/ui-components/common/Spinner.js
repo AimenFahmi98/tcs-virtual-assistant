@@ -16,7 +16,7 @@ function Spinner({
   borderSize = "4px",
 }) {
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full w-full items-center justify-center">
       <div
         className="animate-spin rounded-full"
         style={{

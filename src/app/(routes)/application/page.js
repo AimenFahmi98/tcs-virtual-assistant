@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 
-export default function Page() {
+function page() {
   redirect("/application/virtual-assistant");
 }
+
+export default page;

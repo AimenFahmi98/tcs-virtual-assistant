@@ -8,7 +8,7 @@ export async function POST(req, { params }) {
 
     // Get response from assistant
     const { finalResponse, redirectPage } =
-      await openaiAppAgent.getAssistantResponse(message);
+      await openaiAppAgent.getAgentResponse(message);
 
     return new Response(
       JSON.stringify({ response: finalResponse, redirectPage }),

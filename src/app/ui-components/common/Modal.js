@@ -13,7 +13,7 @@ const Modal = ({ isOpen, onClose, children, className }) => {
 
       {/* Modal */}
       <div
-        className={`fixed left-1/2 top-1/2 z-50 ${className} -translate-x-1/2 -translate-y-1/2 rounded-xl bg-background p-6 shadow-lg`}
+        className={`fixed left-1/2 top-1/2 z-50 ${className} -translate-x-1/2 -translate-y-1/2 overflow-hidden bg-background shadow-lg`}
       >
         {children}
       </div>

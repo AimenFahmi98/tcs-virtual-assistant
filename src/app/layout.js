@@ -19,7 +19,7 @@ export default async function RootLayout({ children }) {
       <body
         className={`${poppins.className} bg-background text-text transition-all duration-300`}
       >
-        <ReduxProvider>{children}</ReduxProvider>
+        <div>{children}</div>
       </body>
     </html>
   );

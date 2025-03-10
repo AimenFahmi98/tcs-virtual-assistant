@@ -14,10 +14,10 @@ import styles from "@/styles/Answer.module.css";
  *   <p>Some HTML content</p>
  * </HtmlBox>
  */
-function HtmlBox({ children }) {
+function HtmlBox({ children, className }) {
   return (
     <div
-      className={`${styles.globalStyles} ${styles.tableStyles} ${styles.ulStyles} ${styles.pStyles} ${styles.hStyles} text-text`}
+      className={`${styles.globalStyles} ${styles.tableStyles} ${styles.ulStyles} ${styles.pStyles} ${styles.hStyles} ${className}`}
     >
       {children !== undefined && parse(children)}
     </div>

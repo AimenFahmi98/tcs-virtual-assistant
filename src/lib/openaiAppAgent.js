@@ -202,6 +202,13 @@ export class OpenAIAppAgent {
     }
   }
 
+  /**
+   * Pushes the assistant's answer to the history, ensuring it's a valid string.
+   * It also reorders the history to keep the first system message at the top.
+   *
+   * @param {string} assistantAnswer - The assistant's answer to be added to the history.
+   * @throws {Error} If the provided assistant answer is invalid.
+   */
   pushAnswerToHistory(assistantAnswer) {
     if (!assistantAnswer || typeof assistantAnswer !== "string") {
       throw new Error("Invalid assistant answer provided.");
@@ -215,12 +222,15 @@ export class OpenAIAppAgent {
     const firstSystemMessage = this.history.find(
       (msg) => msg.role === "system",
     );
+
+    // Reorders the history to ensure the first system message remains at the top.
     this.history = [
-      firstSystemMessage,
+      firstSystemMessage, // Place the first system message at the beginning of the array.
       ...this.history.filter(
         (msg) => msg.role !== "system" || msg === firstSystemMessage,
-      ),
+      ), // Filter out any other system messages, except the first one.
     ].filter((msg, index, self) => {
+      // Ensure that only the first system message is included in the history.
       return (
         msg.role !== "system" ||
         index ===
@@ -276,7 +286,7 @@ export class OpenAIAppAgent {
     }
   }
 
-  async getAssistantResponse(userMessage) {
+  async getAgentResponse(userMessage) {
     try {
       this.addToHistory({
         role: "user",

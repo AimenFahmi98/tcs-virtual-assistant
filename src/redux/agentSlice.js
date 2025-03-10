@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-// Async thunks
 export const fetchQuestions = createAsyncThunk(
   "agent/fetchQuestions",
   async (userId) => {
@@ -118,7 +117,20 @@ export const generateAnswer = createAsyncThunk(
   },
 );
 
-// First the initial state remains the same
+export const clearConversation = createAsyncThunk(
+  "agent/clearConversation",
+  async (userId) => {
+    const response = await fetch(
+      `/api/supabase/users/${userId}/app-agent/questions`,
+      {
+        method: "DELETE",
+      },
+    );
+    if (!response.ok) throw new Error("Failed to clear conversation");
+    return response.json();
+  },
+);
+
 const initialState = {
   questions: [],
   questionAnswerMap: {}, // { questionId: [answers] }
@@ -130,6 +142,7 @@ const initialState = {
     creatingAnswer: false,
     loadingConversation: false,
     generatingAnswer: false, // Add new loading state
+    clearingConversation: false,
   },
   error: null,
 };
@@ -237,6 +250,22 @@ const agentSlice = createSlice({
       })
       .addCase(createAnswer.rejected, (state, action) => {
         state.loadingStates.creatingAnswer = false;
+        state.error = action.error.message;
+      })
+
+      // Clear Conversation
+      .addCase(clearConversation.pending, (state) => {
+        state.loadingStates.clearingConversation = true;
+        state.error = null;
+      })
+      .addCase(clearConversation.fulfilled, (state) => {
+        state.loadingStates.clearingConversation = false;
+        state.questions = [];
+        state.questionAnswerMap = {};
+        state.currentRedirectPage = "";
+      })
+      .addCase(clearConversation.rejected, (state, action) => {
+        state.loadingStates.clearingConversation = false;
         state.error = action.error.message;
       });
   },
