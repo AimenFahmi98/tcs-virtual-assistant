@@ -1,5 +1,4 @@
 export function formatTimeAgo(dateString) {
-  console.log(dateString);
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);

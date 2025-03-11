@@ -2,7 +2,7 @@ import ProfileMenu from "./profile/ProfileMenu";
 import BtnAppAgent from "./app-agent/BtnAppAgent";
 import BtnNotifications from "../common/BtnNotifications";
 import { redirect } from "next/navigation";
-import BtnThemeSwitcher from "../common/btnThemeSwitcher";
+import BtnThemeSwitcher from "../common/btnThemeToggler";
 
 function Header({ className }) {
   return (

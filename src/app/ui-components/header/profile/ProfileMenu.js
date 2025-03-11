@@ -27,10 +27,8 @@ function MenuLink({ href, icon: Icon, text, onLinkClicked }) {
     </Link>
   );
 }
-function MenuTrigger({ isAdmin, title, userEmail }) {
+function MenuTrigger({ isAdmin, title, userEmail, onClick }) {
   const { currentUser, isLoading } = useSelector((state) => state.users);
-  const { notifications } = useSelector((state) => state.notifications);
-  const unreadNotifications = notifications.filter((n) => !n.isRead);
 
   return isLoading ? (
     <div className="relative flex items-center justify-center gap-3 rounded-xl bg-primary px-3 py-1.5 pr-3 text-sm transition-all duration-300">
@@ -44,14 +42,11 @@ function MenuTrigger({ isAdmin, title, userEmail }) {
     currentUser && (
       <div
         className={`relative flex items-center justify-center gap-3 rounded-xl bg-primary px-3 py-1.5 pr-4 text-sm transition-all duration-300 hover:cursor-pointer hover:from-primary hover:to-primary`}
+        onClick={onClick}
       >
         {currentUser.profile_picture ? (
           <Image
-            src={
-              currentUser.profile_picture ||
-              // "https://api.dicebear.com/7.x/avataaars/svg"
-              "empty-pp.png"
-            }
+            src={currentUser.profile_picture}
             alt="Profile"
             width={40}
             height={40}
@@ -59,20 +54,9 @@ function MenuTrigger({ isAdmin, title, userEmail }) {
           />
         ) : (
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-background text-primary_dark">
-            <FaRegUser className="h-5 w-5 text-text" />
+            <FaRegUser className="h-4 w-4 text-text" />
           </div>
         )}
-
-        {/* {unreadNotifications.length > 0 && (
-          <div className="absolute -right-1 -top-0.5">
-            <div className="relative">
-              <IoNotificationsOutline className="h-5 w-5 text-text" />
-              <div className="absolute -right-1 -top-1 flex h-[12px] w-[12px] items-center justify-center rounded-full bg-red-500 text-[8px] font-semibold text-red-50">
-                <span>{unreadNotifications.length}</span>
-              </div>
-            </div>
-          </div>
-        )} */}
 
         <div className="flex flex-col items-start justify-center">
           <div className="flex items-start justify-start gap-1.5">
@@ -151,9 +135,10 @@ function ProfileMenu() {
           <MenuTrigger
             isAdmin={isAdmin}
             userEmail={user?.email}
-            isMenuOpen={isOpen}
+            onClick={() => setIsOpen(true)}
           />
         }
+        isMenuOpen={isOpen}
       >
         <MenuContent isAdmin={isAdmin} onLinkClicked={() => setIsOpen(false)} />
       </DropDownMenu>

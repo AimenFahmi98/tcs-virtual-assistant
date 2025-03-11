@@ -24,7 +24,7 @@ function DocumentManagerHeader() {
     <div className="sticky left-0 top-0 flex w-full items-center justify-between bg-background py-3 pl-8 pr-2">
       <div className="flex w-[80%] justify-start text-text_light">
         <Link
-          href="/document-manager/document-management/my-documents/all-documents"
+          href="/application/document-manager/document-management/my-documents/all-documents"
           onClick={() => setActiveTab("All")}
           className={`px-4 py-4 hover:text-text ${
             activeTab === "All"
@@ -37,7 +37,7 @@ function DocumentManagerHeader() {
           </span>
         </Link>
         <Link
-          href="/document-manager/document-management/my-documents/rag-documents"
+          href="/application/document-manager/document-management/my-documents/rag-documents"
           onClick={() => setActiveTab("Selected for RAG")}
           className={`px-4 py-4 hover:text-text ${
             activeTab === "Selected for RAG"

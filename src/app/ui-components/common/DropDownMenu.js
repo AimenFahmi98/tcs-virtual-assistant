@@ -19,6 +19,11 @@ function DropDownMenu({ trigger, children, isMenuOpen = false }) {
   const triggerRef = useRef(null);
 
   useEffect(() => {
+    setIsOpen(isMenuOpen);
+    console.log("isMenuOpen", isMenuOpen);
+  }, [isMenuOpen]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         menuRef.current &&

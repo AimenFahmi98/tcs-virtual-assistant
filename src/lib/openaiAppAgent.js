@@ -106,21 +106,21 @@ export class OpenAIAppAgent {
   redirectUserToPage(pageName) {
     switch (pageName) {
       case "virtual assistant":
-        return "virtual-assistant";
+        return "application/virtual-assistant";
       case "documents":
-        return "document-manager/document-management/my-documents/all-documents";
+        return "application/document-manager/document-management/my-documents/all-documents";
       case "rag documents":
-        return "document-manager/document-management/my-documents/rag-documents";
+        return "application/document-manager/document-management/my-documents/rag-documents";
       case "roles":
-        return "admin-settings/roles";
+        return "application/admin-settings/roles";
       case "user roles":
-        return "admin-settings/user-roles";
+        return "application/admin-settings/user-roles";
       case "document roles":
-        return "admin-settings/document-roles";
+        return "application/admin-settings/document-roles";
       case "account information":
-        return "profile/account-info";
+        return "application/profile/account-info";
       case "appearance settings":
-        return "settings/appearance";
+        return "application/settings/appearance";
       default:
         return "";
     }

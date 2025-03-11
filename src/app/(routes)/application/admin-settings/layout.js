@@ -15,7 +15,7 @@ function Layout({ children }) {
           <SettingsItem icon={<FaUsers className="h-5 w-5" />} title={"Users"}>
             <SubSettingsItem
               title={"Manage Users"}
-              href={"/admin-settings/users"}
+              href={"/application/admin-settings/users"}
               icon={<PiPaintBrush />}
             />
           </SettingsItem>
@@ -25,15 +25,15 @@ function Layout({ children }) {
           >
             <SubSettingsItem
               title={"Manage Roles"}
-              href={"/admin-settings/roles"}
+              href={"/application/admin-settings/roles"}
             />
             <SubSettingsItem
               title={"Manage User Roles"}
-              href={"/admin-settings/user-roles"}
+              href={"/application/admin-settings/user-roles"}
             />
             <SubSettingsItem
               title={"Manage Document Roles"}
-              href={"/admin-settings/document-roles"}
+              href={"/application/admin-settings/document-roles"}
             />
           </SettingsItem>
         </SettingsNav>
