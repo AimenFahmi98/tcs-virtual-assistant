@@ -6,7 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Spinner from "@/app/ui-components/common/Spinner";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { uploadDocument } from "@/redux/documentSlice";
 
 /**
@@ -35,6 +35,8 @@ function BtnUploadDocument() {
   const [isUploading, setIsUploading] = useState(false);
   const router = useRouter();
   const { isUploadingDocument } = useSelector((state) => state.documents);
+  const { currentUser: user } = useSelector((state) => state.users);
+  const dispatch = useDispatch();
 
   const handleFileUpload = async (event) => {
     const fileInput = event.target;
@@ -49,7 +51,7 @@ function BtnUploadDocument() {
 
       const response = await dispatch(
         uploadDocument({
-          user_id: userId, // You'll need to get userId from your auth context/state
+          user_id: user.id, // You'll need to get userId from your auth context/state
           formData,
         }),
       ).unwrap();

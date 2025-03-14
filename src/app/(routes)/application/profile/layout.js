@@ -9,7 +9,7 @@ import { useSelector } from "react-redux";
 
 function Layout({ children }) {
   const { notifications } = useSelector((state) => state.notifications);
-  const unreadNotifications = notifications.filter((n) => !n.isRead);
+  const unreadNotifications = notifications.filter((n) => !n.is_read);
 
   return (
     <>

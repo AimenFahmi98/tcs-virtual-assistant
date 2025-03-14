@@ -8,7 +8,7 @@ import Spinner from "@/app/ui-components/common/Spinner";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { addRole, deleteRole, fetchAllRoles } from "@/redux/roleSlice";
-import { addNotification } from "@/redux/notificationSlice";
+import { broadcastNotificationBasedOnRoles } from "@/redux/notificationSlice";
 
 export default function Page() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,11 +127,16 @@ export default function Page() {
                 addRole({ name: newRoleName, description: newRoleDescription }),
               );
               dispatch(
-                addNotification({
-                  userId: user.id,
+                broadcastNotificationBasedOnRoles({
                   title: "New Role",
                   content: `'${newRoleName}' has been added as a new role.`,
+                  roles: ["Admin"],
                 }),
+                // addNotification({
+                //   userId: user.id,
+                //   title: "New Role",
+                //   content: `'${newRoleName}' has been added as a new role.`,
+                // }),
               );
               setNewRoleName("");
               setNewRoleDescription("");

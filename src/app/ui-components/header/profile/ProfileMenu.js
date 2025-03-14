@@ -78,7 +78,7 @@ function MenuTrigger({ isAdmin, title, userEmail, onClick }) {
 
 function MenuContent({ isAdmin, onLinkClicked }) {
   const { notifications } = useSelector((state) => state.notifications);
-  const unreadNotifications = notifications.filter((n) => !n.isRead);
+  const unreadNotifications = notifications.filter((n) => !n.is_read);
 
   return (
     <div className="flex flex-col items-center justify-start">

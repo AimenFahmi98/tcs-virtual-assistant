@@ -93,8 +93,10 @@ export async function GET(request, { params }) {
  *   - status: 200 for success, 400 for invalid input, 500 for server errors
  * @throws {Error} When file processing, upload, or storage operations fail
  */
-export async function POST(request) {
+export async function POST(request, { params }) {
   try {
+    const supabase = await createClient();
+    const { user_id } = await params;
     const formData = await request.formData();
     const file = formData.get("file");
 

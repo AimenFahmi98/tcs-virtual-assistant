@@ -84,7 +84,7 @@ export default {
           "--color-accent-secondary": "#fcd34d",
           "--color-secondary": "#009688",
           "--color-secondary-light": "#009688",
-          "--color-text": "#ececec",
+          "--color-text": "#dedede",
           "--color-text-light": "rgb(156 163 175)",
         },
         '[data-theme="spring"]': {

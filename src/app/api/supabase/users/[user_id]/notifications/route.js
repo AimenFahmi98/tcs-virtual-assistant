@@ -15,11 +15,22 @@ export async function GET(_request, { params }) {
     const { user_id } = await params;
     const supabase = await createClient();
 
+    // Join user_notifications with notifications table
     const { data, error } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", user_id)
-      .order("created_at", { ascending: false });
+      .from("user_notifications")
+      .select(
+        `
+        notification_id,
+        is_read,
+        notifications:notification_id (
+          id,
+          title,
+          content,
+          created_at
+        )
+      `,
+      )
+      .eq("user_id", user_id);
 
     if (error) {
       console.error("Error fetching notifications:", error.message);
@@ -33,10 +44,19 @@ export async function GET(_request, { params }) {
       );
     }
 
+    // Format the joined data
+    const notifications = data.map((item) => ({
+      id: item.notifications.id,
+      title: item.notifications.title,
+      content: item.notifications.content,
+      created_at: item.notifications.created_at,
+      is_read: item.is_read,
+    }));
+
     return NextResponse.json(
       {
         success: true,
-        data,
+        data: notifications,
         message: "Notifications retrieved successfully",
       },
       { status: 200 },
@@ -68,48 +88,82 @@ export async function POST(request, { params }) {
     const { user_id } = await params;
     const { title, content } = await request.json();
 
-    console.log("Creating notification for user:", user_id, title, content);
-
     if (!title || !content) {
       return NextResponse.json(
         {
           success: false,
-          message: "Title and content are required.",
+          error: "Title and content are required",
         },
         { status: 400 },
       );
     }
 
     const supabase = await createClient();
-    const { data, error } = await supabase
+
+    // First, create the notification
+    const { data: notificationData, error: notificationError } = await supabase
       .from("notifications")
       .insert([
         {
           title,
           content,
-          user_id,
         },
       ])
       .select();
 
-    if (error) {
-      throw new Error(`Error creating notification: ${error.message}`);
+    if (notificationError) {
+      console.error("Error creating notification:", notificationError.message);
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to create notification",
+          details: notificationError.message,
+        },
+        { status: 500 },
+      );
+    }
+
+    // Then link the notification to the user
+    const notification_id = notificationData[0].id;
+    const { error: userNotificationError } = await supabase
+      .from("user_notifications")
+      .insert([
+        {
+          user_id,
+          notification_id,
+        },
+      ]);
+
+    if (userNotificationError) {
+      console.error(
+        "Error linking notification to user:",
+        userNotificationError.message,
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to assign notification to user",
+          details: userNotificationError.message,
+        },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(
       {
         success: true,
+        data: notificationData[0],
         message: "Notification created successfully",
-        data: data[0],
       },
       { status: 201 },
     );
-  } catch (error) {
-    console.error("Error creating notification:", error);
+  } catch (err) {
+    console.error("Unexpected error creating notification:", err);
     return NextResponse.json(
       {
         success: false,
-        message: error.message,
+        error: "Internal server error",
+        details: err.message,
       },
       { status: 500 },
     );

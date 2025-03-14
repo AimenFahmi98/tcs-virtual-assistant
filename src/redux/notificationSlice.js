@@ -5,6 +5,7 @@ const initialState = {
   isFetchingNotifications: true,
   isAddingNotification: false,
   isUpdatingNotification: false,
+  isBroadcastingNotification: false,
   notificationBeingUpdated: -1,
   notificationBeingDeleted: -1,
   isDeletingNotification: false,
@@ -54,7 +55,7 @@ export const markNotificationAsReadInDB = createAsyncThunk(
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ isRead: true }),
+        body: JSON.stringify({ is_read: true }),
       },
     );
     dispatch(markNotificationAsRead(notificationId));
@@ -75,7 +76,7 @@ export const markNotificationAsUnreadInDB = createAsyncThunk(
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ isRead: false }),
+        body: JSON.stringify({ is_read: false }),
       },
     );
     dispatch(markNotificationAsUnread(notificationId));
@@ -104,6 +105,25 @@ export const updateNotification = createAsyncThunk(
 );
 
 // Delete a notification
+// Add a new broadcast notification based on roles
+export const broadcastNotificationBasedOnRoles = createAsyncThunk(
+  "notifications/broadcastNotificationBasedOnRoles",
+  async ({ roles, title, content }) => {
+    const response = await fetch(
+      `/api/supabase/notifications/broadcast/based-on-roles`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ roles, title, content }),
+      },
+    );
+    const data = await response.json();
+    return data; // Assuming the API returns { success: true, data: {...}, message: "..." }
+  },
+);
+
 export const deleteNotification = createAsyncThunk(
   "notifications/deleteNotification",
   async ({ userId, notificationId }, { dispatch }) => {
@@ -129,7 +149,7 @@ const notificationSlice = createSlice({
         (notification) => notification.id === notificationId,
       );
       if (notification) {
-        notification.isRead = true;
+        notification.is_read = true;
       }
     },
     markNotificationAsUnread: (state, action) => {
@@ -138,7 +158,7 @@ const notificationSlice = createSlice({
         (notification) => notification.id === notificationId,
       );
       if (notification) {
-        notification.isRead = false;
+        notification.is_read = false;
       }
     },
     setNotificationBeingUpdated: (state, action) => {
@@ -150,6 +170,18 @@ const notificationSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(broadcastNotificationBasedOnRoles.pending, (state) => {
+        state.isBroadcastingNotification = true;
+        state.error = null;
+      })
+      .addCase(broadcastNotificationBasedOnRoles.fulfilled, (state, action) => {
+        state.isBroadcastingNotification = false;
+        state.notifications.push(action.payload);
+      })
+      .addCase(broadcastNotificationBasedOnRoles.rejected, (state, action) => {
+        state.isBroadcastingNotification = false;
+        state.error = action.error.message;
+      })
       .addCase(fetchNotifications.pending, (state) => {
         state.isFetchingNotifications = true;
         state.error = null;

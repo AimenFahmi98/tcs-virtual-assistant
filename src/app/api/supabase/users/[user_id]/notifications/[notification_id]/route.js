@@ -41,10 +41,10 @@ export async function DELETE(request, { params }) {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
-      .from("notifications")
+      .from("user_notifications")
       .delete()
       .eq("user_id", user_id)
-      .eq("id", notification_id);
+      .eq("notification_id", notification_id);
 
     if (error) {
       console.error(error);
@@ -101,17 +101,17 @@ export async function PUT(request, { params }) {
 
 export async function PATCH(request, { params }) {
   const { user_id, notification_id } = await params;
-  const { isRead } = await request.json();
+  const { is_read } = await request.json();
 
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
-      .from("notifications")
+      .from("user_notifications")
       .update({
-        isRead: isRead,
+        is_read,
       })
       .eq("user_id", user_id)
-      .eq("id", notification_id)
+      .eq("notification_id", notification_id)
       .single();
 
     if (error) {
